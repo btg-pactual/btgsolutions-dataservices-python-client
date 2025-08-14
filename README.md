@@ -142,7 +142,7 @@ ws.run(on_message=lambda message: print(message))
 
 ```python
 import btgsolutions_dataservices as btg
-ws = btg.MarketDataWebSocketClient(api_key='YOUR_API_KEY', data_type='books')
+ws = btg.MarketDataWebSocketClient(api_key='YOUR_API_KEY', data_type='instrument_status', data_subtype='stocks')
 ws.run(on_message=lambda message: print(message))
 ws.instrument_status('PETR4')
 ws.instrument_status_history('PETR4')
