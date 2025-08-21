@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 from ..exceptions import BadResponse
 import requests
 from ..config import url_api_v1
@@ -82,7 +82,7 @@ class TickerLastEvent:
     def get_tobs(self, data_type:str, raw_data:bool=False):
 
         """
-        This method gives the last available book type for all tickers of the given type.
+        This method provides the last available top of book for all tickers of the given market type.
 
         Parameters
         ----------------
@@ -112,6 +112,38 @@ class TickerLastEvent:
             response = json.loads(response.text)
             raise BadResponse(f'Error: {response.get("error", "")}')
 
+    def get_status(self, tickers:List[str]=None, raw_data:bool=False):
+
+        """
+        This method provides the current ticker trading status information.
+
+        Parameters
+        ----------------
+        tickers: List[str]
+            Ticker symbol.
+            Field is not required. Default: None
+            Example: ['PETR4', 'VALE3', 'DOLM25'].
+            If no ticker is provided, it returns trading status information for all available tickers.
+        raw_data: bool
+            If false, returns data in a dataframe. If true, returns raw data.
+            Field is not required. Default: False.
+        """
+
+        if tickers:
+            tickers = ','.join(tickers)
+            url = f"{url_api_v1}/marketdata/last-event/status/all/batch?tickers={tickers}"
+        else:
+            url = f"{url_api_v1}/marketdata/last-event/status/all/batch"
+
+        response = requests.request("GET", url,  headers={"authorization": f"Bearer {self.authenticator.token}"})
+        if response.status_code == 200:
+            if raw_data:
+                return response.json()
+            else:
+                return pd.DataFrame(response.json())
+        else:
+            response = json.loads(response.text)
+            raise BadResponse(f'Error: {response}')
 
     def get_available_tickers(self,type:str, data_type:str):
 
