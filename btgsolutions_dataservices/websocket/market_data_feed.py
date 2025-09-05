@@ -61,7 +61,7 @@ class MarketDataFeed:
         Field is not required. Default: 'b3'.
     data_type: str
         Market Data type.
-        Options: 'trades', 'processed-trades', 'books', 'indices', 'securities', 'stoploss', 'candles-1S', 'candles-1M', 'instrument_status'.
+        Options: 'trades', 'processed-trades', 'books', 'indices', 'securities', 'stoploss', 'candles-1S', 'candles-1M', 'instrument_status', 'settlement-price'.
         Field is not required. Default: 'trades'.
     data_subtype: str
         Market Data subtype (when applicable).

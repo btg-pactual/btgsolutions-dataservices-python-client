@@ -26,6 +26,7 @@ SECURITIES = 'securities'
 TRADES = 'trades'
 PROCESSEDTRADES = 'processed-trades'
 INSTRUMENTSTATUS = 'instrument_status'
+SETTLEMENTPRICES = 'settlement-price'
 BOOKS = 'books'
 INDICES = 'indices'
 CANDLES1S = 'candles-1S'
@@ -49,7 +50,8 @@ VALID_MARKET_DATA_TYPES = [
     CANDLES1S,
     CANDLES1M,
     STOPLOSS,
-    INSTRUMENTSTATUS
+    INSTRUMENTSTATUS,
+    SETTLEMENTPRICES
 ]
 VALID_MARKET_DATA_SUBTYPES = [ALL, STOCKS, OPTIONS, DERIVATIVES]
 
@@ -133,6 +135,11 @@ market_data_socket_urls = {
                 STOCKS: f"{url_ws}v2/marketdata/{INSTRUMENTSTATUS}/{STOCKS}",
                 DERIVATIVES: f"{url_ws}v2/marketdata/{INSTRUMENTSTATUS}/{DERIVATIVES}",
                 OPTIONS: f"{url_ws}v2/marketdata/{INSTRUMENTSTATUS}/{OPTIONS}",
+            }
+        },
+        SETTLEMENTPRICES: {
+            REALTIME: {
+                ALL: f"{url_ws}v2/marketdata/{SETTLEMENTPRICES}",
             }
         }
     },

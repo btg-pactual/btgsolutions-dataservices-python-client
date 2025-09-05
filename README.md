@@ -152,6 +152,21 @@ ws.instrument_status_history('PETR4')
 # while True:
 #   sleep(1)
 ```
+##### Settlement Price 
+
+```python
+import btgsolutions_dataservices as btg
+ws = btg.MarketDataWebSocketClient(api_key='YOUR_API_KEY', data_type='settlement-price', instruments=['ABEVOU25', 'WINV25'])
+ws.run(on_message=lambda message: print(message))
+
+## Getting the last event (settlement-price) of ABEVOU25:
+# ws.get_last_event(['ABEVOU25'])
+
+## The following is optional to keep the program running in a .py file:
+# from time import sleep
+# while True:
+#   sleep(1)
+```
 
 ##### Candles (1 second candles)
 

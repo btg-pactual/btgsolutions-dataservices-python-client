@@ -2,7 +2,7 @@
 from typing import Optional, List
 from ..exceptions import WSTypeError, DelayedError, FeedError
 from ..rest import Authenticator
-from ..config import market_data_socket_urls, market_data_feedb_socket_urls, MAX_WS_RECONNECT_RETRIES, VALID_STREAM_TYPES, VALID_EXCHANGES, VALID_MARKET_DATA_TYPES, VALID_MARKET_DATA_SUBTYPES, REALTIME, B3, TRADES, INDICES, ALL, STOCKS, BOOKS, FEED_A, FEED_B
+from ..config import market_data_socket_urls, market_data_feedb_socket_urls, MAX_WS_RECONNECT_RETRIES, VALID_STREAM_TYPES, VALID_EXCHANGES, VALID_MARKET_DATA_TYPES, VALID_MARKET_DATA_SUBTYPES, REALTIME, B3, TRADES, INDICES, ALL, STOCKS, BOOKS, FEED_A, FEED_B, SETTLEMENTPRICES
 from .websocket_default_functions import _on_open, _on_message, _on_error, _on_close
 import websocket
 import json
@@ -49,7 +49,7 @@ class MarketDataWebSocketClient:
 
     data_type: str
         Market Data type.
-        Options: 'trades', 'processed-trades', 'books', 'indices', 'securities', 'stoploss', 'candles-1S', 'candles-1M', 'instrument_status'.
+        Options: 'trades', 'processed-trades', 'books', 'indices', 'securities', 'stoploss', 'candles-1S', 'candles-1M', 'instrument_status', 'settlement-price'.
         Field is not required. Default: 'trades'.
 
     data_subtype: str
@@ -93,7 +93,7 @@ class MarketDataWebSocketClient:
         self.__nro_reconnect_retries = 0
 
         if data_subtype is None:
-            if exchange is B3 and data_type is not INDICES:
+            if exchange is B3 and not data_type in [INDICES, SETTLEMENTPRICES]:
                 data_subtype = STOCKS
             else:
                 data_subtype = ALL
