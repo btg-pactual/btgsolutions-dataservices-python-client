@@ -1,0 +1,5 @@
+api_key = "PASTE_YOUR_API_KEY_HERE"
+client_id = "PASTE_YOUR_CLIENT_ID_HERE"
+
+# printing mode: "stats", "ws", or "both"
+print_mode = "stats"
