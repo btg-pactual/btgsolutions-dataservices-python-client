@@ -10,3 +10,4 @@ from .corporate_events import CorporateEvents
 from .company_data import CompanyData
 from .public_sources import PublicSources
 from .reference_data import ReferenceData
+from .stock_loan import StockLoan

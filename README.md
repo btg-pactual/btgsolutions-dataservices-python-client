@@ -344,6 +344,16 @@ public_sources = btg.PublicSources(api_key='YOUR_API_KEY')
 public_sources.get_opas(start_date='2022-10-01', end_date='2024-10-01')
 ```
 
+#### STOCK LOAN
+
+```python
+import btgsolutions_dataservices as btg
+stock_loan = btg.StockLoan(api_key='YOUR_API_KEY')
+stock_loan.get_trades()
+stock_loan.get_paginated_trades(page=1, limit=1000, ticker ='PETR4')
+stock_loan.get_available_tickers()
+```
+
 #### Company Fundamentals
 
 ##### Company General Information

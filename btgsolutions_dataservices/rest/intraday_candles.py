@@ -58,7 +58,8 @@ class IntradayCandles:
         start:int=0,
         end:int=0,
         mode:str='absolute',
-        raw_data:bool=False
+        raw_data:bool=False,
+        cross_filter:str='',
     ):     
         """
         This method provides realtime intraday candles for a given ticker.
@@ -93,6 +94,10 @@ class IntradayCandles:
             Candle mode.
             Example: 'absolute', 'relative' or 'spark'.
             Default: absolute.
+        cross_filter: str
+            Filter trades by cross status. Available only when market_type is derivatives.
+            Options: 'all', 'only_cross' or 'without_cross'.
+            Default: 'all'.
         raw_data: bool
             If false, returns data in a dict of dataframes. If true, returns raw data.
             Default: False.
@@ -101,6 +106,8 @@ class IntradayCandles:
         if market_type not in ['stocks', 'derivatives', 'options', 'indices']: raise MarketTypeError(f"Must provide a valid 'market_type' parameter. Input: '{market_type}'. Accepted values: 'stocks', 'derivatives', 'options' or 'indices'.")
 
         if delay not in ['delayed', 'realtime']: raise DelayError(f"Must provide a valid 'delay' parameter. Input: '{delay}'. Accepted values: 'delayed' or 'realtime'.")
+        
+        if cross_filter and market_type != 'derivatives': raise DelayError(f"The 'cross_filter' flag is only valid for market_type 'derivatives'.")
 
         tickers = ','.join(tickers) if type(tickers) is list else tickers 
 
@@ -109,6 +116,8 @@ class IntradayCandles:
         if start: url += f'&start={start}'
 
         if end: url += f'&end={end}'
+        
+        if cross_filter: url += f'&cross_filter={cross_filter}'
 
         response = requests.request("GET", url,  headers=self.headers)
         if response.status_code == 200:
