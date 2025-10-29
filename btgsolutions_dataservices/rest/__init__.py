@@ -11,3 +11,4 @@ from .company_data import CompanyData
 from .public_sources import PublicSources
 from .reference_data import ReferenceData
 from .stock_loan import StockLoan
+from .ticker_last_event_polling import TickerLastEventPolling

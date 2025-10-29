@@ -230,6 +230,15 @@ last_event = btg.TickerLastEvent(api_key='YOUR_API_KEY')
 last_event.get_status(tickers=['PETR4','VALE3'])
 ```
 
+#### Ticker Last Polling - Top of Books
+
+```python
+import btgsolutions_dataservices as btg
+last_event = btg.TickerLastEventPolling(api_key='YOUR_API_KEY', data_type='top-of-books', data_subtype='stocks')
+last_event.get()
+```
+
+
 ### Historical Data
 
 #### Historical Candles
