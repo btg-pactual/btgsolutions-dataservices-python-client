@@ -1,6 +1,7 @@
 # BTG Solutions - Data Services
 
 Real time and historical Financial Market Data, News, Corporate Events and more.
+More information at https://dataservices.btgpactualsolutions.com/.
 
 ## Installation
 
@@ -455,3 +456,4 @@ import btgsolutions_dataservices as btg
 ref = btg.ReferenceData(api_key='YOUR_API_KEY')
 ref.ticker_reference(tickers=['VALE3','PETR4'])
 ```
+
