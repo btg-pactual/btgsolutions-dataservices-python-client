@@ -21,7 +21,7 @@ else:
 description = "Python package containing several classes and data for extracting and manipulating market and trading data."
 
 setup(
-    name='btgsolutions-dataservices-python-client',
+    name='btgsolutions_dataservices_python_client',
     version='2.18.0',
     description=description,
     long_description=long_description,
