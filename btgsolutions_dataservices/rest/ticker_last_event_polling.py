@@ -33,11 +33,11 @@ class TickerLastEventPolling:
         Field is required.
     data_type: str
         Market Data type.
-        Options: 'top-of-books'
+        Options: 'top-of-books', 'snapshot-tob'.
         Field is required.
     data_subtype: str
         Market Data subtype.
-        Options: 'stocks', 'options', 'derivatives'.
+        Options: 'stocks', 'options', 'derivatives', 'equities'.
         Field is required.
     """
     def __init__(
@@ -45,24 +45,33 @@ class TickerLastEventPolling:
         api_key:Optional[str],
         data_type: str,
         data_subtype: str,
-        interval_seconds: float = 1.0
+        interval_seconds: Optional[float]=None
     ):
         self.api_key = api_key
         self.authenticator = Authenticator(self.api_key)
-        self.interval_seconds = interval_seconds
         self.data_type = data_type
 
         self._last_request_datetime = None
         self._cache = {}
 
         self._available_data_types = {
-            "top-of-books": ['stocks', 'derivatives', 'options']
+            "top-of-books": ['stocks', 'derivatives', 'options'],
+            "snapshot-tob": ['equities', 'derivatives']
+        }
+
+        self._default_interval_seconds  = {
+            "top-of-books": 1,
+            "snapshot-tob": 10
         }
 
         self._available_url = {
             "top-of-books": {
                 "data": f"{url_api_v1}/marketdata/last-event/books/top/{data_subtype}/batch", 
                 "available": f"{url_api_v1}/marketdata/last-event/books/{data_subtype}/availables"
+            },
+            "snapshot-tob": {
+                "data": f"{url_api_v1}/marketdata/br/b3/snapshot/book/tob/{data_subtype}/batch", 
+                "available": f"{url_api_v1}/marketdata/br/b3/snapshot/book/tob/{data_subtype}/available-tickers"
             }
         }
         
@@ -71,6 +80,12 @@ class TickerLastEventPolling:
 
         if data_subtype not in self._available_data_types[data_type]:
             raise Exception(f"Must provide a valid data_subtype. Valid data subtypes are: {self._available_data_types[data_type]}")
+
+
+        if interval_seconds is None:
+            self.interval_seconds = self._default_interval_seconds[data_type]
+        else:
+            self.interval_seconds = interval_seconds
 
         self.url = self._available_url[self.data_type]["data"]
 
@@ -96,7 +111,7 @@ class TickerLastEventPolling:
         request_datetime = datetime.now(timezone.utc)
 
         response = requests.request("GET", url, headers={"authorization": f"Bearer {self.authenticator.token}"})
-        
+
         if response.status_code != 200:
             return
 
