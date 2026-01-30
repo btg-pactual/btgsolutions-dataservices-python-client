@@ -61,7 +61,7 @@ class TickerLastEventPolling:
 
         self._default_interval_seconds  = {
             "top-of-books": 1,
-            "snapshot-tob": 10
+            "snapshot-tob": 1
         }
 
         self._available_url = {
