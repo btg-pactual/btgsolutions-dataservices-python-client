@@ -310,7 +310,7 @@ bulk_data.get_security_list(date='2025-05-07')
 ```python
 import btgsolutions_dataservices as btg
 bulk_data = btg.BulkData(api_key='YOUR_API_KEY')
-bulk_data.get_market_data_channels(date='2024-01-03')
+bulk_data.get_market_data_channels(date='2026-01-30')
 ```
 
 ##### Compressed Data (PCAP files)
@@ -318,9 +318,9 @@ bulk_data.get_market_data_channels(date='2024-01-03')
 ```python
 import btgsolutions_dataservices as btg
 bulk_data = btg.BulkData(api_key='YOUR_API_KEY')
-bulk_data.get_compressed_data(channel='001', date='2024-01-03', data_type='instruments')
-# bulk_data.get_compressed_data(channel='053', date='2024-01-03', data_type='incremental')
-# bulk_data.get_compressed_data(channel='051', date='2024-01-03', data_type='snapshot')
+bulk_data.get_compressed_data(channel='98', date='2026-01-30', data_type='instruments')
+# bulk_data.get_compressed_data(channel='98', date='2026-01-30', data_type='incremental', feed='feedA')
+# bulk_data.get_compressed_data(channel='98', date='2026-01-30', data_type='snapshot')
 ```
 
 ### Alternative Data

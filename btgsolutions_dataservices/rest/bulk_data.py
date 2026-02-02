@@ -2,7 +2,7 @@ import os
 from typing import Optional
 from ..exceptions import BadResponse
 import requests
-from ..config import url_api_v1, url_apis
+from ..config import url_api_v1, url_apis, url_apis_v3
 from .authenticator import Authenticator
 import json
 import pandas as pd
@@ -12,7 +12,9 @@ import pyarrow.parquet as pq
 def download_compressed_file(url, headers):
     
     with requests.get(url, headers=headers, stream=True) as response:
-        response.raise_for_status()
+        if response.status_code != 200:
+            response = json.loads(response.text)
+            raise BadResponse(f'Error: {response.get("ApiClientError", "")}.\n{response.get("SuggestedAction", "")}')
 
         try:
             file_name = response.headers.get('content-disposition').split('filename=')[1]
@@ -110,9 +112,9 @@ class BulkData:
         date: str
             Date period.
             Field is required.
-            Format: 'YYYY-MM-DD'. Example: '2023-07-03', '2023-07-28'.
+            Format: 'YYYY-MM-DD'. Example: '2026-01-30'.
         """
-        url = f"{url_api_v1}/marketdata/bulkdata/channels?date={date}"
+        url = f"{url_apis_v3}/marketdata/bulkdata/compressed/available-channels?date={date}"
 
         response = requests.request("GET", url,  headers=self.headers)
         if response.status_code == 200:
@@ -126,7 +128,7 @@ class BulkData:
         channel:str,
         date:str,
         data_type:str='instruments',
-        binary:bool=False
+        feed:str='',
     ):
         """
         This method provides market data via compressed files (instruments, snapshot, incremental) for a given market data channel and date. Function get_market_data_channels provides all the available channels for a given date.
@@ -135,19 +137,19 @@ class BulkData:
         ----------------
         channel: str
             Market Data channel.
-            Field is required. Example: '001'.
+            Field is required. Example: '72'.
         date: str
             Date period.
             Field is required.
-            Format: 'YYYY-MM-DD'. Example: '2023-07-03', '2023-07-28'.
+            Format: 'YYYY-MM-DD'. Example: '2026-01-30'.
         data_type: str
             Market data type.
-            Field is required. Example: 'instruments', 'snapshot', 'incremental', 'instrument-status'.
-        binary: bool
-            If true, returns binary data. If false, returns FIX/FAST data.
-            Field is not required. Default: false.
+            Field is required. Example: 'instruments', 'snapshot', 'incremental'.
+        feed: str
+            Available only for 'incremental' data type. Allowed values: 'feedA' or 'feedB'
+            Field is not required.
         """
-        url = f"{url_api_v1}/marketdata/bulkdata/compressed/{data_type}?channel={channel}&date={date}&binary={binary}"
+        url = f"{url_apis_v3}/marketdata/bulkdata/compressed/{data_type}?channel={channel}&date={date}&feed={feed}"
         download_compressed_file(url, headers=self.headers)
 
     def get_data(
