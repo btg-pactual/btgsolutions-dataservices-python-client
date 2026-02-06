@@ -1,7 +1,7 @@
 from typing import Optional, List
 from ..exceptions import BadResponse
 import requests
-from ..config import url_api_v1
+from ..config import base_url
 from .authenticator import Authenticator
 import pandas as pd
 import json
@@ -24,7 +24,7 @@ class TickerLastEvent:
     >>> )
 
     >>> last_event.get_tob(
-    >>>     data_type = 'stocks',
+    >>>     data_type = 'derivatives',
     >>>     raw_data = False
     >>> )
 
@@ -43,7 +43,7 @@ class TickerLastEvent:
 
         self.available_data_types = {
             "trades": ['equities', 'derivatives'],
-            "books": ['stocks', 'derivatives', 'options']
+            "books": ['equities', 'derivatives']
         }
 
     def get_trades(self, data_type:str, ticker:str, raw_data:bool=False):
@@ -67,7 +67,7 @@ class TickerLastEvent:
         if data_type not in self.available_data_types["trades"]:
             raise Exception(f"Must provide a valid data_type. Valid data types are: {self.available_data_types['trades']}")
 
-        url = f"{url_api_v1}/marketdata/last-event/trades/{data_type}?ticker={ticker}"
+        url = f"{base_url}/api/v1/marketdata/br/b3/snapshot/trades/{data_type}?ticker={ticker}"
 
         response = requests.request("GET", url,  headers={"authorization": f"Bearer {self.authenticator.token}"})
         if response.status_code == 200:
@@ -89,7 +89,7 @@ class TickerLastEvent:
         data_type: str
             Market Data Type.
             Field is required. 
-            Example: 'stocks', 'derivatives', 'options'.
+            Example: 'equities', 'derivatives'.
         raw_data: bool
             If false, returns data in a dataframe. If true, returns raw data.
             Field is not required. Default: False.
@@ -98,7 +98,7 @@ class TickerLastEvent:
         if data_type not in self.available_data_types["books"]:
             raise Exception(f"Must provide a valid data_type. Valid data types are: {self.available_data_types}")
 
-        url = f"{url_api_v1}/marketdata/last-event/books/top/{data_type}/batch"
+        url = f"{base_url}/api/v1/marketdata/br/b3/snapshot/book/tob/{data_type}/batch"
 
         response = requests.request("GET", url,  headers={"authorization": f"Bearer {self.authenticator.token}"})
 
@@ -131,9 +131,9 @@ class TickerLastEvent:
 
         if tickers:
             tickers = ','.join(tickers)
-            url = f"{url_api_v1}/marketdata/last-event/status/all/batch?tickers={tickers}"
+            url = f"{base_url}/api/v1/marketdata/br/b3/snapshot/status/batch?tickers={tickers}"
         else:
-            url = f"{url_api_v1}/marketdata/last-event/status/all/batch"
+            url = f"{base_url}/api/v1/marketdata/br/b3/snapshot/status/batch"
 
         response = requests.request("GET", url,  headers={"authorization": f"Bearer {self.authenticator.token}"})
         if response.status_code == 200:
@@ -159,7 +159,7 @@ class TickerLastEvent:
         data_type: str
             Market Data Type.
             Field is required. 
-            Example: 'equities', 'derivatives', 'options', 'stocks'.
+            Example: 'equities', 'derivatives'.
         """
 
         if type not in self.available_data_types:
@@ -168,8 +168,8 @@ class TickerLastEvent:
         if data_type not in self.available_data_types[type]:
             raise Exception(f"Must provide a valid data_type. Valid data types are: {self.available_data_types['books']}")
 
-        url = f"{url_api_v1}/marketdata/last-event/trades/{data_type}/available-tickers" if type == "trades" else \
-            f"{url_api_v1}/marketdata/last-event/books/{data_type}/availables"
+        url = f"{base_url}/api/v1/marketdata/br/b3/snapshot/trades/{data_type}/available-tickers" if type == "trades" else \
+            f"{base_url}/api/v1/marketdata/br/b3/snapshot/book/tob/{data_type}/available-tickers"
 
         response = requests.request("GET", url,  headers={"authorization": f"Bearer {self.authenticator.token}"})
         if response.status_code == 200:

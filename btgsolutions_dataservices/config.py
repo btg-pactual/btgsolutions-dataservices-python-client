@@ -1,5 +1,8 @@
+base_url = "https://dataservices.btgpactualsolutions.com"
+
 # WS
 url_ws = "wss://dataservices.btgpactualsolutions.com/stream/"
+ws_br_b3_base_path = "/stream/v1/marketdata/br/b3/"
 
 # Rest
 url_apis = "https://dataservices.btgpactualsolutions.com/api/v2"
@@ -22,16 +25,12 @@ B3 = 'b3'
 BMV = 'bmv'
 NASDAQ = 'nasdaq'
 
-SECURITIES = 'securities'
 TRADES = 'trades'
 PROCESSEDTRADES = 'processed-trades'
 INSTRUMENTSTATUS = 'instrument_status'
 SETTLEMENTPRICES = 'settlement-price'
 BOOKS = 'books'
 INDICES = 'indices'
-CANDLES1S = 'candles-1S'
-CANDLES1M = 'candles-1M'
-STOPLOSS = 'stoploss'
 
 ALL = 'all'
 STOCKS = 'stocks'
@@ -42,14 +41,10 @@ VALID_STREAM_TYPES = [REALTIME, DELAYED, THROTTLE]
 VALID_COUNTRIES = [BR, MX, CL]
 VALID_EXCHANGES = [B3, BMV, NASDAQ]
 VALID_MARKET_DATA_TYPES = [
-    SECURITIES,
     TRADES,
     PROCESSEDTRADES,
     BOOKS,
     INDICES,
-    CANDLES1S,
-    CANDLES1M,
-    STOPLOSS,
     INSTRUMENTSTATUS,
     SETTLEMENTPRICES
 ]
@@ -63,45 +58,33 @@ market_data_socket_urls = {
     B3: {
         TRADES: {
             REALTIME: {
-                STOCKS: f'{url_ws}v2/marketdata/trade/{STOCKS}',
-                OPTIONS: f'{url_ws}v2/marketdata/trade/{OPTIONS}',
-                DERIVATIVES: f'{url_ws}v2/marketdata/trade/{DERIVATIVES}',
+                STOCKS: f'{url}{ws_br_b3_base_path}trade/{STOCKS}',
+                OPTIONS: f'{url}{ws_br_b3_base_path}trade/{OPTIONS}',
+                DERIVATIVES: f'{url}{ws_br_b3_base_path}trade/{DERIVATIVES}',
             },
             DELAYED: {
-                STOCKS: f'{url_ws}v2/marketdata/trade/{STOCKS}/{DELAYED}',
-                OPTIONS: f'{url_ws}v2/marketdata/trade/{OPTIONS}/{DELAYED}',
-                DERIVATIVES: f"{url_ws}v2/marketdata/trade/{DERIVATIVES}/{DELAYED}",
-            },
-            THROTTLE: {
-                STOCKS: f"{url_ws}v2/marketdata/{THROTTLE}/trade/{STOCKS}",
-                OPTIONS: f"{url_ws}v2/marketdata/{THROTTLE}/trade/{OPTIONS}",
-                DERIVATIVES: f"{url_ws}v2/marketdata/{THROTTLE}/trade/{DERIVATIVES}",
+                STOCKS: f'{url}{ws_br_b3_base_path}{DELAYED}/trade/{STOCKS}/{DELAYED}',
+                OPTIONS: f'{url}{ws_br_b3_base_path}{DELAYED}/trade/{OPTIONS}/{DELAYED}',
+                DERIVATIVES: f"{url}{ws_br_b3_base_path}{DELAYED}/trade/{DERIVATIVES}/{DELAYED}",
             },
         },
         PROCESSEDTRADES: {
             REALTIME: {
-                STOCKS: f'{url_ws}v2/marketdata/{PROCESSED}/trade/{STOCKS}',
-                OPTIONS: f'{url_ws}v2/marketdata/{PROCESSED}/trade/{OPTIONS}',
-                DERIVATIVES: f'{url_ws}v2/marketdata/{PROCESSED}/trade/{DERIVATIVES}',
+                STOCKS: f'{url}{ws_br_b3_base_path}{PROCESSED}-trade/{STOCKS}',
+                OPTIONS: f'{url}{ws_br_b3_base_path}{PROCESSED}-trade/{OPTIONS}',
+                DERIVATIVES: f'{url}{ws_br_b3_base_path}{PROCESSED}-trade/{DERIVATIVES}',
             },
         },
         BOOKS: {
             REALTIME: {
-                STOCKS: f'{url_ws}v2/marketdata/book/{STOCKS}',
-                OPTIONS: f'{url_ws}v2/marketdata/book/{OPTIONS}',
-                DERIVATIVES: f'{url_ws}v2/marketdata/book/{DERIVATIVES}',
+                STOCKS: f'{url}{ws_br_b3_base_path}book-snapshot-mbp/{STOCKS}',
+                OPTIONS: f'{url}{ws_br_b3_base_path}book-snapshot-mbp/{OPTIONS}',
+                DERIVATIVES: f'{url}{ws_br_b3_base_path}book-snapshot-mbp/{DERIVATIVES}',
             },
             THROTTLE: {
-                STOCKS: f"{url_ws}v2/marketdata/{THROTTLE}/book/{STOCKS}",
-                OPTIONS: f"{url_ws}v2/marketdata/{THROTTLE}/book/{OPTIONS}",
-                DERIVATIVES: f"{url_ws}v2/marketdata/{THROTTLE}/book/{DERIVATIVES}",
-            },
-        },
-        SECURITIES: {
-            REALTIME: {
-                STOCKS: f"{url_ws}v1/marketdata/sec_list/{STOCKS}",
-                OPTIONS: f"{url_ws}v1/marketdata/sec_list/{OPTIONS}",
-                DERIVATIVES: f"{url_ws}v1/marketdata/sec_list/{DERIVATIVES}",
+                STOCKS: f"{url}{ws_br_b3_base_path}throttled/book-snapshot-mbp/{STOCKS}",
+                OPTIONS: f"{url}{ws_br_b3_base_path}throttled/book-snapshot-mbp/{OPTIONS}",
+                DERIVATIVES: f"{url}{ws_br_b3_base_path}throttled/book-snapshot-mbp/{DERIVATIVES}",
             },
         },
         INDICES: {
@@ -112,34 +95,16 @@ market_data_socket_urls = {
                 ALL: f"{url_ws}v2/marketdata/{INDICES}/{DELAYED}",
             }
         },
-        CANDLES1S: {
-            REALTIME: {
-                STOCKS: f"{url_ws}v1/marketdata/candles/1S/{STOCKS}",
-                DERIVATIVES: f"{url_ws}v1/marketdata/candles/1S/{DERIVATIVES}",
-            },
-        },
-        CANDLES1M: {
-            REALTIME: {
-                STOCKS: f"{url_ws}v1/marketdata/candles/1M/{STOCKS}",
-                DERIVATIVES: f"{url_ws}v1/marketdata/candles/1M/{DERIVATIVES}",
-            },
-        },
-        STOPLOSS: {
-            REALTIME: {
-                STOCKS: f"{url_ws}v1/marketdata/{STOPLOSS}/{STOCKS}",
-                DERIVATIVES: f"{url_ws}v1/marketdata/{STOPLOSS}/{DERIVATIVES}",
-            },
-        },
         INSTRUMENTSTATUS: {
             REALTIME: {
-                STOCKS: f"{url_ws}v2/marketdata/{INSTRUMENTSTATUS}/{STOCKS}",
-                DERIVATIVES: f"{url_ws}v2/marketdata/{INSTRUMENTSTATUS}/{DERIVATIVES}",
-                OPTIONS: f"{url_ws}v2/marketdata/{INSTRUMENTSTATUS}/{OPTIONS}",
+                STOCKS: f"{url}{ws_br_b3_base_path}instrument-status/{STOCKS}",
+                DERIVATIVES: f"{url}{ws_br_b3_base_path}instrument-status/{DERIVATIVES}",
+                OPTIONS: f"{url}{ws_br_b3_base_path}instrument-status/{OPTIONS}",
             }
         },
         SETTLEMENTPRICES: {
             REALTIME: {
-                ALL: f"{url_ws}v2/marketdata/{SETTLEMENTPRICES}",
+                ALL: f"{url}{ws_br_b3_base_path}{SETTLEMENTPRICES}",
             }
         }
     },
@@ -160,13 +125,6 @@ market_data_socket_urls = {
 }
 
 market_data_feedb_socket_urls = {
-    B3: {
-        BOOKS: {
-            REALTIME: {
-                OPTIONS: f'{url_ws}v2/feedb/marketdata/book/{OPTIONS}',
-            }
-        }
-    }
 }
 
 hfn_socket_urls = {

@@ -1,7 +1,7 @@
 from typing import List, Optional
 from ..exceptions import BadResponse
 import requests
-from ..config import url_apis
+from ..config import base_url
 from .authenticator import Authenticator
 import pandas as pd
 import json
@@ -51,7 +51,7 @@ class ReferenceData:
         if not isinstance(tickers, list) or len(tickers) == 0:
             raise BadResponse(f'Error: Must provide a valid list of tickers')
         
-        url = f"{url_apis}/marketdata/instrument/specs/all/instrument_data/batch?tickers={','.join(tickers)}"
+        url = f"{base_url}/api/v1/marketdata/br/b3/snapshot/instruments/batch?tickers={','.join(tickers)}"
 
         response = requests.request("GET", url,  headers=self.headers)
         if response.status_code == 200:
