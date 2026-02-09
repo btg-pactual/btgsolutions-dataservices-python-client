@@ -1,7 +1,7 @@
 from typing import Optional
 from ..exceptions import BadResponse
 import requests
-from ..config import url_apis
+from ..config import base_url
 from .authenticator import Authenticator
 import json
 import pandas as pd
@@ -85,7 +85,7 @@ class Quotes:
         except:
             raise Exception(f"'tickers' parameter must be an array of strings.")
 
-        url = f"{url_apis}/marketdata/quotes/{market_type}/{mode}/tickers?tickers={tickers}"
+        url = f"{base_url}/api/v1/marketdata/br/b3/{mode}/quotes/{market_type}/tickers?tickers={tickers}"
 
         response = requests.request("GET", url,  headers=self.headers)
         if response.status_code == 200:
@@ -148,7 +148,7 @@ class Quotes:
         if not isinstance(ticker_type, str):
             raise Exception(f"'ticker_type' parameter must be a string. Input: '{ticker_type}'")
 
-        url = f"{url_apis}/marketdata/quotes/{market_type}/{mode}/top-bottom?variation={variation}&n={n}&type={ticker_type}"
+        url = f"{base_url}/api/v1/marketdata/br/b3/{mode}/quotes/{market_type}/top-bottom?variation={variation}&n={n}&type={ticker_type}"
 
         response = requests.request("GET", url,  headers=self.headers)
         if response.status_code == 200:
@@ -185,7 +185,7 @@ class Quotes:
         if mode not in self.available_modes:
             raise Exception(f"Must provide a valid 'mode' parameter. Input: '{mode}'. Accepted values: {self.available_modes}")
 
-        url = f"{url_apis}/marketdata/quotes/{market_type}/{mode}/available-tickers"
+        url = f"{base_url}/api/v1/marketdata/br/b3/{mode}/quotes/{market_type}/available-tickers"
         response = requests.request("GET", url,  headers=self.headers)
 
         if response.status_code == 200:
