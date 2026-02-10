@@ -111,7 +111,7 @@ class IntradayCandles:
 
         tickers = ','.join(tickers) if type(tickers) is list else tickers 
 
-        url = f"{base_url}/v1/marketdata/br/b3/{delay}/intraday-candles/{market_type}?tickers={tickers}&candle_period={candle_period}&mode={mode}&timezone={timezone}"
+        url = f"{base_url}/api/v1/marketdata/br/b3/{delay}/intraday-candles/{market_type}?tickers={tickers}&candle_period={candle_period}&mode={mode}&timezone={timezone}"
 
         if start: url += f'&start={start}'
 
@@ -153,7 +153,7 @@ class IntradayCandles:
 
         if delay not in ['delayed', 'realtime']: raise DelayError(f"Must provide a valid 'delay' parameter. Input: '{delay}'. Accepted values: 'delayed' or 'realtime'.")
         
-        url = f"{base_url}/v1/marketdata/br/b3/{delay}/intraday-candles/{market_type}/available_tickers"
+        url = f"{base_url}/api/v1/marketdata/br/b3/{delay}/intraday-candles/{market_type}/available_tickers"
 
         response = requests.request("GET", url,  headers=self.headers)
         if response.status_code == 200: return json.loads(response.text)

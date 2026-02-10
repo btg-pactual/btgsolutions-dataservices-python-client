@@ -58,7 +58,7 @@ class ReferenceData:
             if raw_data:
                 return response.json()
             else:
-                return pd.DataFrame(response.json().values())
+                return pd.DataFrame(response.json())
         else:
             response = json.loads(response.text)
             raise BadResponse(f'Error: {response.get("ApiClientError", "")}')

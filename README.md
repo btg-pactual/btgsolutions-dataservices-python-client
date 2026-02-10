@@ -86,11 +86,11 @@ ws.run(on_message=lambda message: print(message))
 #   sleep(1)
 ```
 
-##### Trades, throttle (1 second throttle)
+##### Books, throttle (1 second throttle)
 
 ```python
 import btgsolutions_dataservices as btg
-ws = btg.MarketDataWebSocketClient(api_key='YOUR_API_KEY', data_type='trades', stream_type='throttle', instruments=['PETR4', 'VALE3'])
+ws = btg.MarketDataWebSocketClient(api_key='YOUR_API_KEY', data_type='books', stream_type='throttle', instruments=['PETR4', 'VALE3'])
 ws.run(on_message=lambda message: print(message))
 
 ## The following is optional to keep the program running in a .py file:
@@ -126,19 +126,6 @@ ws.run(on_message=lambda message: print(message))
 #   sleep(1)
 ```
 
-##### Security List
-
-```python
-import btgsolutions_dataservices as btg
-ws = btg.MarketDataWebSocketClient(api_key='YOUR_API_KEY', data_type='securities', data_subtype='derivatives')
-ws.run(on_message=lambda message: print(message))
-
-## The following is optional to keep the program running in a .py file:
-# from time import sleep
-# while True:
-#   sleep(1)
-```
-
 ##### Security Status
 
 ```python
@@ -162,20 +149,6 @@ ws.run(on_message=lambda message: print(message))
 
 ## Getting the last event (settlement-price) of ABEVOU25:
 # ws.get_last_event(['ABEVOU25'])
-
-## The following is optional to keep the program running in a .py file:
-# from time import sleep
-# while True:
-#   sleep(1)
-```
-
-##### Candles (1 second candles)
-
-```python
-import btgsolutions_dataservices as btg
-ws = btg.MarketDataWebSocketClient(api_key='YOUR_API_KEY', data_type='candles-1S', stream_type='realtime')
-ws.run(on_message=lambda message: print(message))
-ws.candle_subscribe(list_instruments=['PETR4','VALE3'], candle_type='partial')
 
 ## The following is optional to keep the program running in a .py file:
 # from time import sleep
@@ -220,7 +193,7 @@ last_event.get_trades(data_type='equities', ticker='VALE3')
 ```python
 import btgsolutions_dataservices as btg
 last_event = btg.TickerLastEvent(api_key='YOUR_API_KEY')
-last_event.get_tobs(data_type='stocks')
+last_event.get_tobs(data_type='equities')
 ```
 
 #### Ticker Last Trading Status

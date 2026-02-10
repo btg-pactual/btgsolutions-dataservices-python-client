@@ -1,4 +1,5 @@
 base_url = "https://dataservices.btgpactualsolutions.com"
+base_url_ws = "wss://dataservices.btgpactualsolutions.com"
 
 # WS
 url_ws = "wss://dataservices.btgpactualsolutions.com/stream/"
@@ -58,33 +59,33 @@ market_data_socket_urls = {
     B3: {
         TRADES: {
             REALTIME: {
-                STOCKS: f'{base_url}{ws_br_b3_base_path}trade/{STOCKS}',
-                OPTIONS: f'{base_url}{ws_br_b3_base_path}trade/{OPTIONS}',
-                DERIVATIVES: f'{base_url}{ws_br_b3_base_path}trade/{DERIVATIVES}',
+                STOCKS: f'{base_url_ws}{ws_br_b3_base_path}trade/{STOCKS}',
+                OPTIONS: f'{base_url_ws}{ws_br_b3_base_path}trade/{OPTIONS}',
+                DERIVATIVES: f'{base_url_ws}{ws_br_b3_base_path}trade/{DERIVATIVES}',
             },
             DELAYED: {
-                STOCKS: f'{base_url}{ws_br_b3_base_path}{DELAYED}/trade/{STOCKS}/{DELAYED}',
-                OPTIONS: f'{base_url}{ws_br_b3_base_path}{DELAYED}/trade/{OPTIONS}/{DELAYED}',
-                DERIVATIVES: f"{base_url}{ws_br_b3_base_path}{DELAYED}/trade/{DERIVATIVES}/{DELAYED}",
+                STOCKS: f'{base_url_ws}{ws_br_b3_base_path}{DELAYED}/trade/{STOCKS}/{DELAYED}',
+                OPTIONS: f'{base_url_ws}{ws_br_b3_base_path}{DELAYED}/trade/{OPTIONS}/{DELAYED}',
+                DERIVATIVES: f"{base_url_ws}{ws_br_b3_base_path}{DELAYED}/trade/{DERIVATIVES}/{DELAYED}",
             },
         },
         PROCESSEDTRADES: {
             REALTIME: {
-                STOCKS: f'{base_url}{ws_br_b3_base_path}{PROCESSED}-trade/{STOCKS}',
-                OPTIONS: f'{base_url}{ws_br_b3_base_path}{PROCESSED}-trade/{OPTIONS}',
-                DERIVATIVES: f'{base_url}{ws_br_b3_base_path}{PROCESSED}-trade/{DERIVATIVES}',
+                STOCKS: f'{base_url_ws}{ws_br_b3_base_path}{PROCESSED}-trade/{STOCKS}',
+                OPTIONS: f'{base_url_ws}{ws_br_b3_base_path}{PROCESSED}-trade/{OPTIONS}',
+                DERIVATIVES: f'{base_url_ws}{ws_br_b3_base_path}{PROCESSED}-trade/{DERIVATIVES}',
             },
         },
         BOOKS: {
             REALTIME: {
-                STOCKS: f'{base_url}{ws_br_b3_base_path}book-snapshot-mbp/{STOCKS}',
-                OPTIONS: f'{base_url}{ws_br_b3_base_path}book-snapshot-mbp/{OPTIONS}',
-                DERIVATIVES: f'{base_url}{ws_br_b3_base_path}book-snapshot-mbp/{DERIVATIVES}',
+                STOCKS: f'{base_url_ws}{ws_br_b3_base_path}book-snapshot-mbp/{STOCKS}',
+                OPTIONS: f'{base_url_ws}{ws_br_b3_base_path}book-snapshot-mbp/{OPTIONS}',
+                DERIVATIVES: f'{base_url_ws}{ws_br_b3_base_path}book-snapshot-mbp/{DERIVATIVES}',
             },
             THROTTLE: {
-                STOCKS: f"{base_url}{ws_br_b3_base_path}throttled/book-snapshot-mbp/{STOCKS}",
-                OPTIONS: f"{base_url}{ws_br_b3_base_path}throttled/book-snapshot-mbp/{OPTIONS}",
-                DERIVATIVES: f"{base_url}{ws_br_b3_base_path}throttled/book-snapshot-mbp/{DERIVATIVES}",
+                STOCKS: f"{base_url_ws}{ws_br_b3_base_path}throttled/book-snapshot-mbp/{STOCKS}",
+                OPTIONS: f"{base_url_ws}{ws_br_b3_base_path}throttled/book-snapshot-mbp/{OPTIONS}",
+                DERIVATIVES: f"{base_url_ws}{ws_br_b3_base_path}throttled/book-snapshot-mbp/{DERIVATIVES}",
             },
         },
         INDICES: {
@@ -97,14 +98,14 @@ market_data_socket_urls = {
         },
         INSTRUMENTSTATUS: {
             REALTIME: {
-                STOCKS: f"{base_url}{ws_br_b3_base_path}instrument-status/{STOCKS}",
-                DERIVATIVES: f"{base_url}{ws_br_b3_base_path}instrument-status/{DERIVATIVES}",
-                OPTIONS: f"{base_url}{ws_br_b3_base_path}instrument-status/{OPTIONS}",
+                STOCKS: f"{base_url_ws}{ws_br_b3_base_path}instrument-status/{STOCKS}",
+                DERIVATIVES: f"{base_url_ws}{ws_br_b3_base_path}instrument-status/{DERIVATIVES}",
+                OPTIONS: f"{base_url_ws}{ws_br_b3_base_path}instrument-status/{OPTIONS}",
             }
         },
         SETTLEMENTPRICES: {
             REALTIME: {
-                ALL: f"{base_url}{ws_br_b3_base_path}{SETTLEMENTPRICES}",
+                ALL: f"{base_url_ws}{ws_br_b3_base_path}{SETTLEMENTPRICES}/stocks",
             }
         }
     },
