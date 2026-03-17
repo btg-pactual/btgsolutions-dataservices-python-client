@@ -117,7 +117,7 @@ class TickerLastEventPolling:
 
         self.authenticator.token  # force token refresh if needed
 
-        response = requests.request("GET", url, headers={"authorization": f"Bearer {self.authenticator.token}"})
+        response = requests.request("GET", url, headers={"authorization": f"Bearer {self.authenticator.token}"}, timeout=60)
 
         if response.status_code != 200:
             return
