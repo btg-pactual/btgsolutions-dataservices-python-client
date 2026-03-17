@@ -2,6 +2,8 @@ from setuptools import setup, find_packages
 import os
 from pathlib import Path
 
+from btgsolutions_dataservices import __version__
+
 this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
 
@@ -22,7 +24,7 @@ description = "Python package containing several classes and data for extracting
 
 setup(
     name='btgsolutions_dataservices_python_client',
-    version='3.2.2',
+    version=__version__,
     description=description,
     long_description=long_description,
     long_description_content_type='text/markdown',

@@ -53,6 +53,7 @@ class TickerLastEventPolling:
 
         self._last_request_datetime = None
         self._cache = {}
+        self._lock = threading.Lock() 
 
         self._available_data_types = {
             "top-of-books": ['stocks', 'derivatives', 'options'],
@@ -106,21 +107,26 @@ class TickerLastEventPolling:
 
 
     def _update_data(self):
-        url = self.url + (f"?dt={(self._last_request_datetime - timedelta(seconds=60)).strftime('%Y-%m-%dT%H:%M:%S.000Z')}" if self._last_request_datetime else "")
+
+        with self._lock:
+            last_dt = self._last_request_datetime
+    
+        url = self.url + (f"?dt={(last_dt - timedelta(seconds=60)).strftime('%Y-%m-%dT%H:%M:%S.000Z')}" if last_dt else "")
 
         request_datetime = datetime.now(timezone.utc)
+
+        self.authenticator.token  # force token refresh if needed
 
         response = requests.request("GET", url, headers={"authorization": f"Bearer {self.authenticator.token}"})
 
         if response.status_code != 200:
             return
 
-
-        self._last_request_datetime = request_datetime
-        
         new_data = { tob["sb"]: tob for tob in response.json() if tob.get("sb")}
 
-        self._cache.update(new_data)
+        with self._lock:
+            self._last_request_datetime = request_datetime
+            self._cache.update(new_data)
 
 
     def get(self, force_update: bool=False, raw_data:bool=False):
@@ -139,11 +145,14 @@ class TickerLastEventPolling:
         """
         if force_update:
             self._update_data()
+        
+        with self._lock:
+            data = list(self._cache.values())
 
         if raw_data:
-            return list(self._cache.values())
+            return data
         else:
-            return pd.DataFrame(self._cache.values())
+            return pd.DataFrame(data)
 
             
 
