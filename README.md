@@ -222,7 +222,7 @@ last_event.get()
 ```python
 import btgsolutions_dataservices as btg
 hist_candles = btg.HistoricalCandles(api_key='YOUR_API_KEY')
-hist_candles.get_interday_history_candles(ticker='PETR4',  market_type='stocks', corporate_events_adj=True, start_date='2023-10-01', end_date='2023-10-13', rmv_after_market=True, timezone='UTC', raw_data=False)
+hist_candles.get_interday_history_candles(ticker='PETR4',  market_type='stocks', corporate_events_adj=True, start_date='2023-10-01', end_date='2023-10-13', rmv_after_market=True, timezone='UTC', raw_data=False, round=False)
 ```
 
 ##### Intraday
@@ -230,7 +230,7 @@ hist_candles.get_interday_history_candles(ticker='PETR4',  market_type='stocks',
 ```python
 import btgsolutions_dataservices as btg
 hist_candles = btg.HistoricalCandles(api_key='YOUR_API_KEY')
-hist_candles.get_intraday_history_candles(ticker='PETR4',  market_type='stocks', corporate_events_adj=True, date='2023-10-06', candle='1m', rmv_after_market=True, timezone='UTC', raw_data=False)
+hist_candles.get_intraday_history_candles(ticker='PETR4',  market_type='stocks', corporate_events_adj=True, date='2023-10-06', candle='1m', rmv_after_market=True, timezone='UTC', raw_data=False, round=True)
 ```
 
 ##### Available Tickers
@@ -247,6 +247,32 @@ hist_candles.get_available_tickers(market_type='stocks', date='2025-05-29')
 import btgsolutions_dataservices as btg
 hist_candles = btg.HistoricalCandles(api_key='YOUR_API_KEY')
 hist_candles.get_intraday_history_candles(ticker='PETR4',  market_type='stocks', corporate_events_adj=True, date='2023-10-06', candle='1m', rmv_after_market=True, timezone='UTC', raw_data=False).plot(x='candle_time', y='close_price', kind='scatter')
+```
+
+#### Historical Candles Crypto
+
+##### Interday
+
+```python
+import btgsolutions_dataservices as btg
+hist_candles_crypto = btg.HistoricalCandlesCrypto(api_key='YOUR_API_KEY')
+hist_candles_crypto.get_interday_history_candles(ticker='BTC', currency='BRL', exchange='consolidated', start_date='2025-06-01', end_date='2025-07-01', timezone='UTC', raw_data=False)
+```
+
+##### Intraday
+
+```python
+import btgsolutions_dataservices as btg
+hist_candles_crypto = btg.HistoricalCandlesCrypto(api_key='YOUR_API_KEY')
+hist_candles_crypto.get_intraday_history_candles(ticker='BTC', currency='BRL', exchange='consolidated', date='2025-06-01', candle='1h', timezone='America/Sao_Paulo', raw_data=False)
+```
+
+##### Available Tickers
+
+```python
+import btgsolutions_dataservices as btg
+hist_candles_crypto = btg.HistoricalCandlesCrypto(api_key='YOUR_API_KEY')
+hist_candles_crypto.get_available_tickers(exchange='coinbase', date='2023-01-13')
 ```
 
 #### Historical Tick Data (Bulk Data)
@@ -420,6 +446,14 @@ import btgsolutions_dataservices as btg
 corporate_events = btg.CorporateEvents(api_key='YOUR_API_KEY')
 corporate_events.get(start_date='2024-05-01', end_date='2024-05-31')
 # corporate_events.get(start_date='2024-05-01', end_date='2024-05-31', tickers=['VALE3'])
+```
+
+#### Broker Reference
+
+```python
+import btgsolutions_dataservices as btg
+broker_reference = btg.BrokerReference(api_key='YOUR_API_KEY')
+broker_reference.get()
 ```
 
 #### Ticker Reference Data

@@ -43,7 +43,7 @@ class Quotes:
         self.token = Authenticator(self.api_key).token
         self.headers = {"authorization": f"authorization {self.token}"}
 
-        self.available_market_types = ['stocks', 'options', 'derivatives']
+        self.available_market_types = ['stocks', 'options', 'derivatives', 'indices']
         self.available_modes = ['realtime', 'delayed']
         self.available_variations = ['intraday', 'interday']
 
@@ -64,7 +64,7 @@ class Quotes:
             Field is required. Example: ['VALE3'], ['PETR4', 'PRIO3'].
         market_type: str
             Market type.
-            Field is required. Example: 'stocks', 'options', 'derivatives'.
+            Field is required. Example: 'stocks', 'options', 'derivatives', 'indices'.
         mode: str
             Realtime or 15-minutes delayed.
             Field is required. Example: 'realtime' or 'delayed'.
@@ -111,7 +111,7 @@ class Quotes:
         ----------------
         market_type: str
             Market type.
-            Field is required. Example: 'stocks', 'options', 'derivatives'.
+            Field is required. Example: 'stocks', 'options', 'derivatives', 'indices'.
         mode: str
             Realtime or 15-minutes delayed.
             Field is not required. Example: 'realtime' or 'delayed'.
@@ -172,7 +172,7 @@ class Quotes:
         ----------------
         market_type: str
             Market type.
-            Field is required. Example: 'stocks', 'options', 'derivatives'.
+            Field is required. Example: 'stocks', 'options', 'derivatives', 'indices'.
         mode: str
             Realtime or 15-minutes delayed.
             Field is not required. Example: 'realtime' or 'delayed'.

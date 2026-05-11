@@ -24,6 +24,7 @@ class HistoricalCandles:
     >>>     end_date = '2023-10-20', 
     >>>     rmv_after_market = True,
     >>>     timezone = 'UTC',
+    >>>     round = True,
     >>>     raw_data = False
     >>> )
 
@@ -37,6 +38,7 @@ class HistoricalCandles:
     >>>     rmv_after_market = True,
     >>>     timezone = 'UTC',
     >>>     candle='1m',
+    >>>     round = True,
     >>>     raw_data = False
     >>> )
 
@@ -63,7 +65,8 @@ class HistoricalCandles:
         corporate_events_adj:bool,
         rmv_after_market:bool,
         timezone:str,
-        raw_data:bool=False
+        raw_data:bool=False,
+        round:bool=True
     ):
         """
         This method provides historical candles for a given ticket in determined period.
@@ -93,12 +96,17 @@ class HistoricalCandles:
         raw_data: bool
             If false, returns data in a dataframe. If true, returns raw data.
             Field is not required. Default: False.
+        round: bool
+            Apply rounding to prices.
+            Useful when corporate_events_adj=True, since price adjustment factors
+            may generate values with many decimal places.
+            Field is not required. Default: True.
         """     
         
         if market_type not in ['stocks', 'derivatives']:
             raise MarketTypeError(f'Allowed values: "stocks" or "derivatives". Input value: "{market_type}".')
         
-        url = f"{url_apis_v3}/marketdata/history/candles/intraday/{market_type}?ticker={ticker}&corporate_events_adj={corporate_events_adj}&rmv_after_market={rmv_after_market}&timezone={timezone}&date={date}&candle={candle}"
+        url = f"{url_apis_v3}/marketdata/history/candles/intraday/{market_type}?ticker={ticker}&corporate_events_adj={corporate_events_adj}&rmv_after_market={rmv_after_market}&timezone={timezone}&date={date}&candle={candle}&round={round}"
         response = requests.request("GET", url,  headers=self.headers)
         if response.status_code == 200:
             response_data = json.loads(response.text)
@@ -116,7 +124,8 @@ class HistoricalCandles:
         corporate_events_adj:bool,
         rmv_after_market:bool,
         timezone:str,
-        raw_data:bool=False
+        raw_data:bool=False,
+        round:bool=True
     ):
         """
         This method provides historical candles for a given ticket in determined period.
@@ -146,12 +155,17 @@ class HistoricalCandles:
         raw_data: bool
             If false, returns data in a dataframe. If true, returns raw data.
             Field is not required. Default: False.
+        round: bool
+            Apply rounding to prices.
+            Useful when corporate_events_adj=True, since price adjustment factors
+            may generate values with many decimal places.
+            Field is not required. Default: True.
         """     
         
         if market_type not in ['stocks', 'derivatives']:
             raise MarketTypeError(f'Allowed values: "stocks" or "derivatives". Input value: "{market_type}".')
         
-        url = f"{url_apis_v3}/marketdata/history/candles/interday/{market_type}?ticker={ticker}&corporate_events_adj={corporate_events_adj}&rmv_after_market={rmv_after_market}&timezone={timezone}&start_date={start_date}&end_date={end_date}"
+        url = f"{url_apis_v3}/marketdata/history/candles/interday/{market_type}?ticker={ticker}&corporate_events_adj={corporate_events_adj}&rmv_after_market={rmv_after_market}&timezone={timezone}&start_date={start_date}&end_date={end_date}&round={round}"
         response = requests.request("GET", url,  headers=self.headers)
         if response.status_code == 200:
             response_data = json.loads(response.text)

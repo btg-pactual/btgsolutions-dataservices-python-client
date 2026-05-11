@@ -38,5 +38,5 @@ setup(
     packages=find_packages(),
     url="https://github.com/BTG-Pactual-Solutions/btgsolutions-dataservices-python-client",
     install_requires=install_requires,
-    python_requires=">=3.9,<3.14",
+    python_requires=">=3.9,<3.15",
 )
