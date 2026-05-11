@@ -1,3 +1,14 @@
+3.2.8 (2026-05-11)
+
+
+Added
+
+
+- Added crypto API (#1)
+- Added round parameter to historical candles API (#2)
+- Added broker reference API (#3)
+
+
 2.12.0 (2025-07-21)
 
 
