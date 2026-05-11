@@ -1,5 +1,6 @@
 from .intraday_candles import IntradayCandles
 from .historical_candles import HistoricalCandles
+from .historical_candles_crypto import HistoricalCandlesCrypto
 from .authenticator import Authenticator
 from .bulk_data import BulkData
 from .hfn import HighFrequencyNews

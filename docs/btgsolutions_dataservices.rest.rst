@@ -20,6 +20,14 @@ btgsolutions\_dataservices.rest.bulk\_data module
    :undoc-members:
    :show-inheritance:
 
+btgsolutions\_dataservices.rest.broker\_reference module
+---------------------------------------------------------
+
+.. automodule:: btgsolutions_dataservices.rest.broker_reference
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 btgsolutions\_dataservices.rest.company\_data module
 ----------------------------------------------------
 
@@ -48,6 +56,14 @@ btgsolutions\_dataservices.rest.historical\_candles module
 ----------------------------------------------------------
 
 .. automodule:: btgsolutions_dataservices.rest.historical_candles
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+btgsolutions\_dataservices.rest.historical\_candles\_crypto module
+-------------------------------------------------------------------
+
+.. automodule:: btgsolutions_dataservices.rest.historical_candles_crypto
    :members:
    :undoc-members:
    :show-inheritance:
