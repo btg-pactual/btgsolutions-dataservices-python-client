@@ -136,3 +136,9 @@ hfn_socket_urls = {
         REALTIME: f'{url_ws}v2/hfn/{CL}',
     },
 }
+
+broker_analytics_socket_urls = {
+    BR: {
+        REALTIME: f'{base_url_ws}{ws_br_b3_base_path}broker-analytics',
+    }
+}

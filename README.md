@@ -156,6 +156,31 @@ ws.run(on_message=lambda message: print(message))
 #   sleep(1)
 ```
 
+##### Broker Analytics
+
+```python
+import btgsolutions_dataservices as btg
+
+ws = btg.BrokerAnalyticsWebSocketClient(api_key='YOUR_API_KEY')
+ws.run(on_message=lambda message: print(message))
+
+ws.available_tickers()
+ws.available_brokers()
+ws.subscribe_top_tickers(n=10, brokers=['85'])
+ws.subscribe_top_brokers(n=5, tickers=['SNFF11'])
+ws.subscribed_to()
+ws.get_last_event(analytics_type='top_tickers', n=3, brokers=['85', '3'])
+ws.get_last_event(analytics_type='top_brokers', n=100, tickers=['SNFF11'])
+ws.get_last_event()
+ws.unsubscribe_top_tickers(brokers=['85'])
+ws.unsubscribe_top_brokers(tickers=['SNFF11'])
+
+## The following is optional to keep the program running in a .py file:
+# from time import sleep
+# while True:
+#   sleep(1)
+```
+
 #### Intraday Candles
 
 ```python
