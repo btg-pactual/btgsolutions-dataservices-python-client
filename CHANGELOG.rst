@@ -1,3 +1,12 @@
+3.2.9 (2026-05-18)
+
+
+Added
+
+
+- Added BrokerAnalyticsWebSocketClient (#1)
+
+
 3.2.8 (2026-05-11)
 
 

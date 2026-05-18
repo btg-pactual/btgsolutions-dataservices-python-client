@@ -4,6 +4,14 @@ btgsolutions\_dataservices.websocket package
 Submodules
 ----------
 
+btgsolutions\_dataservices.websocket.broker\_analytics module
+--------------------------------------------------------------
+
+.. automodule:: btgsolutions_dataservices.websocket.broker_analytics
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 btgsolutions\_dataservices.websocket.hfn\_websocket\_client module
 ------------------------------------------------------------------
 
