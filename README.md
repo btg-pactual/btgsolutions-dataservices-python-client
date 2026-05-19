@@ -171,7 +171,6 @@ ws.subscribe_top_brokers(n=5, tickers=['SNFF11'])
 ws.subscribed_to()
 ws.get_last_event(analytics_type='top_tickers', n=3, brokers=['85', '3'])
 ws.get_last_event(analytics_type='top_brokers', n=100, tickers=['SNFF11'])
-ws.get_last_event()
 ws.unsubscribe_top_tickers(brokers=['85'])
 ws.unsubscribe_top_brokers(tickers=['SNFF11'])
 
