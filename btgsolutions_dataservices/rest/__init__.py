@@ -14,3 +14,4 @@ from .reference_data import ReferenceData
 from .stock_loan import StockLoan
 from .ticker_last_event_polling import TickerLastEventPolling
 from .broker_reference import BrokerReference
+from .book_scope import BookScope

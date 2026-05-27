@@ -480,6 +480,30 @@ broker_reference = btg.BrokerReference(api_key='YOUR_API_KEY')
 broker_reference.get()
 ```
 
+#### Book Scope
+
+```python
+import btgsolutions_dataservices as btg
+book_scope = btg.BookScope(api_key='YOUR_API_KEY')
+
+result = book_scope.get(
+    symbol='PETR4',
+    market_type='Equities',
+    start_time='2026-05-22T15:50:00Z',
+    end_time='2026-05-22T16:00:00Z',
+    select=['trades', 'book_snapshot', 'book_incremental'],  # choose one, two, or all three
+)
+
+single_file_result = book_scope.get(
+    symbol='PETR4',
+    market_type='Equities',
+    start_time='2026-05-22T15:50:00Z',
+    end_time='2026-05-22T16:00:00Z',
+    select=['trades', 'book_snapshot', 'book_incremental'],
+    aggregate_info=True,
+)
+```
+
 #### Ticker Reference Data
 
 ```python
