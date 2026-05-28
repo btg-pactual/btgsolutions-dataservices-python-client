@@ -1,3 +1,12 @@
+3.2.12 (2026-05-28)
+
+
+Added
+
+
+- Added broker Analytics API (#1)
+
+
 3.2.11 (2026-05-26)
 
 

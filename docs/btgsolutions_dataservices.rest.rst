@@ -36,6 +36,14 @@ btgsolutions\_dataservices.rest.book\_scope module
    :undoc-members:
    :show-inheritance:
 
+btgsolutions\_dataservices.rest.broker\_analytics module
+---------------------------------------------------------
+
+.. automodule:: btgsolutions_dataservices.rest.broker_analytics
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 btgsolutions\_dataservices.rest.company\_data module
 ----------------------------------------------------
 

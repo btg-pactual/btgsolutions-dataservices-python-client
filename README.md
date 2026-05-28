@@ -257,6 +257,14 @@ hist_candles = btg.HistoricalCandles(api_key='YOUR_API_KEY')
 hist_candles.get_intraday_history_candles(ticker='PETR4',  market_type='stocks', corporate_events_adj=True, date='2023-10-06', candle='1m', rmv_after_market=True, timezone='UTC', raw_data=False, round=True)
 ```
 
+##### Interday Batch
+
+```python
+import btgsolutions_dataservices as btg
+hist_candles = btg.HistoricalCandles(api_key='YOUR_API_KEY')
+hist_candles.get_interday_history_candles_batch(market_type='stocks', tickers=['PETR4', 'VALE3'], start_date='2023-10-01', end_date='2023-10-13', corporate_events_adj=True, rmv_after_market=True, timezone='UTC', raw_data=False, round=True)
+```
+
 ##### Available Tickers
 
 ```python
@@ -487,21 +495,31 @@ import btgsolutions_dataservices as btg
 book_scope = btg.BookScope(api_key='YOUR_API_KEY')
 
 result = book_scope.get(
-    symbol='PETR4',
-    market_type='Equities',
-    start_time='2026-05-22T15:50:00Z',
-    end_time='2026-05-22T16:00:00Z',
+    symbol='DOLM26',
+    market_type='derivatives',
+    start_time='2026-05-28T14:12:00Z',
+    end_time='2026-05-28T14:15:00Z',
     select=['trades', 'book_snapshot', 'book_incremental'],  # choose one, two, or all three
 )
 
 single_file_result = book_scope.get(
-    symbol='PETR4',
-    market_type='Equities',
-    start_time='2026-05-22T15:50:00Z',
-    end_time='2026-05-22T16:00:00Z',
+    symbol='DOLM26',
+    market_type='derivatives',
+    start_time='2026-05-28T14:12:00Z',
+    end_time='2026-05-28T14:15:00Z',
     select=['trades', 'book_snapshot', 'book_incremental'],
     aggregate_info=True,
 )
+```
+
+#### Broker Analytics
+
+```python
+import btgsolutions_dataservices as btg
+broker_analytics = btg.BrokerAnalytics(api_key='YOUR_API_KEY', market_type='stocks')
+summary = broker_analytics.get_summary(brokers=['85', '3'], tickers=['PETR4', 'ABCB4'])
+top_brokers = broker_analytics.get_top_brokers(n=10)
+top_tickers = broker_analytics.get_top_tickers(n=10, brokers=['85', '3'])
 ```
 
 #### Ticker Reference Data
