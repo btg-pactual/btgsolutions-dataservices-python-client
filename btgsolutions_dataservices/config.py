@@ -137,6 +137,8 @@ hfn_socket_urls = {
     },
 }
 
+hfn_v3_socket_url = f'{url_ws}v3/hfn'
+
 broker_analytics_socket_urls = {
     BR: {
         REALTIME: f'{base_url_ws}{ws_br_b3_base_path}broker-analytics',

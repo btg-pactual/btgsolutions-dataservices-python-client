@@ -1,4 +1,5 @@
 from .market_data_websocket_client import MarketDataWebSocketClient
 from .hfn_websocket_client import HFNWebSocketClient
+from .hfn_v3_websocket_client import HFNV3WebSocketClient
 from .market_data_feed import MarketDataFeed
 from .broker_analytics import BrokerAnalyticsWebSocketClient

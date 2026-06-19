@@ -4,6 +4,7 @@ from .historical_candles_crypto import HistoricalCandlesCrypto
 from .authenticator import Authenticator
 from .bulk_data import BulkData
 from .hfn import HighFrequencyNews
+from .hfn_v3 import HighFrequencyNewsV3
 from .quotes import Quotes
 from .intraday_tick_data import IntradayTickData
 from .ticker_last_event import TickerLastEvent

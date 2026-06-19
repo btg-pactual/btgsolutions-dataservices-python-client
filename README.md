@@ -377,6 +377,51 @@ hfn = btg.HighFrequencyNews(api_key='YOUR_API_KEY')
 hfn.latest_news()
 ```
 
+#### High Frequency News V3 Stream
+
+```python
+import btgsolutions_dataservices as btg
+ws = btg.HFNV3WebSocketClient(api_key='YOUR_API_KEY')
+ws.run(on_message=lambda message: print(message))
+
+# Subscribe to live economy news in Portuguese
+ws.subscribe(settings={'feed': 'economy', 'text_language': 'portuguese'})
+
+# Request latest news on demand (without subscribing to the live stream)
+ws.latest_news(settings={'feed': 'crypto', 'limit': '10'})
+
+# Get available filter values
+ws.available_filters(settings={})
+
+# Stop receiving broadcasts (keeps connection open)
+ws.unsubscribe()
+
+ws.close()
+```
+
+#### High Frequency News V3
+
+```python
+import btgsolutions_dataservices as btg
+hfn = btg.HighFrequencyNewsV3(api_key='YOUR_API_KEY')
+
+# Latest news with filters
+hfn.get_latest_news(feed='economy', text_language='portuguese', limit=10)
+
+# Latest news by ticker tags
+hfn.get_latest_news(tags=['PETR4', 'VALE3'])
+
+# Historical news for a date range
+hfn.get_historical_news(
+    start_date='2026-05-01T00:00:00.000Z',
+    end_date='2026-05-01T23:59:59.999Z',
+    feed='economy',
+)
+
+# Available filter values
+hfn.get_available_filters()
+```
+
 #### OPA
 
 ```python

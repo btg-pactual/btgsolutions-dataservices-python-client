@@ -68,6 +68,14 @@ btgsolutions\_dataservices.rest.hfn module
    :undoc-members:
    :show-inheritance:
 
+btgsolutions\_dataservices.rest.hfn\_v3 module
+----------------------------------------------
+
+.. automodule:: btgsolutions_dataservices.rest.hfn_v3
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 btgsolutions\_dataservices.rest.historical\_candles module
 ----------------------------------------------------------
 

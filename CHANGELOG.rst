@@ -1,3 +1,13 @@
+3.2.13 (2026-06-18)
+
+
+Added
+
+
+- High Frequency News V3 REST API (``HighFrequencyNewsV3``) with ``get_latest_news``, ``get_historical_news`` and ``get_available_filters`` (#1)
+- High Frequency News V3 WebSocket client (``HFNV3WebSocketClient``) with subscribe/unsubscribe, on-demand ``latest_news``, ``available_filters``, ``post_metrics`` and ``watch_metrics`` (#2)
+
+
 3.2.12 (2026-05-28)
 
 
