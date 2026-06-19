@@ -1,3 +1,12 @@
+3.3.0 (2026-06-19)
+
+
+Added
+
+
+- alternative data endpoints (#1)
+
+
 3.2.12 (2026-05-28)
 
 
