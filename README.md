@@ -514,6 +514,98 @@ company_data = btg.CompanyData(api_key='YOUR_API_KEY')
 company_data.all_financial_tables(ticker='PETR4')
 ```
 
+#### Alternative Data - Metadata
+
+```python
+import btgsolutions_dataservices as btg
+meta = btg.AlternativeDataMetadata(api_key='YOUR_API_KEY')
+meta.get_company_directory(query='PETROBRAS', jurisdiction='BR')
+meta.get_company_sector(identifier='PETR4')
+meta.get_taxonomy(system='b3')
+meta.get_cnae(code='6422100')
+meta.get_sector_companies(sector='Petróleo, Gás e Biocombustíveis')
+meta.get_sectors_summary()
+meta.get_financial_statement_types()
+meta.get_datasets()
+meta.get_available_assets(dataset='maximum_theoretical_margin', prefix='PETR')
+meta.get_available_indicators()
+```
+
+#### Alternative Data - Companies
+
+```python
+import btgsolutions_dataservices as btg
+companies = btg.AlternativeDataCompanies(api_key='YOUR_API_KEY')
+companies.get_board(company_id='VALE3', body='board')
+companies.get_governance_summary(company_id='ITUB4')
+companies.get_governance_history(company_id='PETR4', start_date='2023-01-01', end_date='2024-12-31')
+companies.get_governance_documents(company_id='PETR4', start_date='2024-01-01', end_date='2024-12-31')
+companies.get_governance_compensation(company_id='VALE3', fiscal_year='2024')
+companies.get_governance_related_party(company_id='ITUB4')
+companies.get_governance_beneficial_ownership(company_id='VALE3')
+companies.get_corporate_registry(company_id='PETR4', direction='partners')
+companies.get_corporate_registry(company_id='PETR4', direction='investees')
+companies.get_insider_trades(company_id='AAPL', start_date='2024-01-01', end_date='2024-12-31')
+companies.get_board_changes(company_id='VALE3', event='appointed')
+companies.get_financial_statements(company_id='PETR4', statement='income_statement', quarter='Q42024')
+companies.get_financial_notes(company_id='VALE3', quarter='Q42024')
+companies.get_disclosures(company_id='PETR4', document_type='repurchase')
+companies.get_disclosures(company_id='PETR4', document_type='insider')
+```
+
+#### Alternative Data - People
+
+```python
+import btgsolutions_dataservices as btg
+people = btg.AlternativeDataPeople(api_key='YOUR_API_KEY')
+people.get_appointments(person_id='slug:Jean Paul Lemann', active_only=True)
+people.get_appointments(person_id='slug:Jean Paul Lemann', group_by='company')
+```
+
+#### Alternative Data - Funds
+
+```python
+import btgsolutions_dataservices as btg
+funds = btg.AlternativeDataFunds(api_key='YOUR_API_KEY')
+funds.get_holdings(fund_id='73.232.530/0001-46', reference_date='2024-12-31')
+funds.get_exposures(fund_id='73.232.530/0001-46', exposure_type='asset_class')
+funds.get_history(fund_id='73.232.530/0001-46', start_date='2024-01-01', end_date='2024-12-31')
+funds.get_lookthrough(fund_id='73.232.530/0001-46')
+funds.get_manager_aggregate_holdings(manager_id='ITAÚ ASSET MANAGEMENT')
+```
+
+#### Alternative Data - Ownership
+
+```python
+import btgsolutions_dataservices as btg
+ownership = btg.AlternativeDataOwnership(api_key='YOUR_API_KEY')
+ownership.get_top_shareholders(company_id='VALE3', limit=10)
+ownership.get_ownership_current(company_id='ITUB4')
+ownership.get_ownership_history(company_id='PETR4', start_date='2023-01-01', end_date='2024-12-31')
+ownership.get_ownership_change_events(company_id='VALE3', start_date='2024-01-01', end_date='2024-12-31')
+ownership.get_ownership_official_notices(company_id='PETR4')
+ownership.get_ownership_control_group(company_id='VALE3')
+ownership.get_ownership_free_float(company_id='PETR4')
+ownership.get_shareholder_holdings(shareholder_id='00.000.000/0001-91')
+ownership.get_institutional_holders(identifier='VALE3')
+ownership.get_fund_holders(identifier='PETR4', identifier_type='b3_ticker')
+```
+
+#### Alternative Data - Macro & Markets
+
+```python
+import btgsolutions_dataservices as btg
+macro = btg.AlternativeDataMacroMarkets(api_key='YOUR_API_KEY')
+macro.get_macro_indicators(indicator='selic')
+macro.get_macro_indicators(indicator='ipca_contributions', start_date='2024-01', end_date='2024-12')
+macro.get_macro_indicators(indicator='gdp', type='yoy')
+macro.get_macro_indicators(indicator='comexstat', year='2024', state='SP')
+macro.get_macro_indicators(indicator='rreo', year='2024', period='6')
+macro.get_maximum_theoretical_margin(asset='PETR4', report_date='2024-12-31')
+macro.get_dpmfi(start_date='2024-01', end_date='2024-12', status='dados_oficiais')
+macro.get_dpmfi_composition(bond_type='IPCA')
+```
+
 ### Reference Data
 
 #### Corporate Events

@@ -4,6 +4,54 @@ btgsolutions\_dataservices.rest package
 Submodules
 ----------
 
+btgsolutions\_dataservices.rest.alternative\_data\_companies module
+--------------------------------------------------------------------
+
+.. automodule:: btgsolutions_dataservices.rest.alternative_data_companies
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+btgsolutions\_dataservices.rest.alternative\_data\_funds module
+---------------------------------------------------------------
+
+.. automodule:: btgsolutions_dataservices.rest.alternative_data_funds
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+btgsolutions\_dataservices.rest.alternative\_data\_macro\_markets module
+------------------------------------------------------------------------
+
+.. automodule:: btgsolutions_dataservices.rest.alternative_data_macro_markets
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+btgsolutions\_dataservices.rest.alternative\_data\_metadata module
+------------------------------------------------------------------
+
+.. automodule:: btgsolutions_dataservices.rest.alternative_data_metadata
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+btgsolutions\_dataservices.rest.alternative\_data\_ownership module
+-------------------------------------------------------------------
+
+.. automodule:: btgsolutions_dataservices.rest.alternative_data_ownership
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+btgsolutions\_dataservices.rest.alternative\_data\_people module
+----------------------------------------------------------------
+
+.. automodule:: btgsolutions_dataservices.rest.alternative_data_people
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 btgsolutions\_dataservices.rest.authenticator module
 ----------------------------------------------------
 
@@ -108,6 +156,14 @@ btgsolutions\_dataservices.rest.intraday\_tick\_data module
    :undoc-members:
    :show-inheritance:
 
+btgsolutions\_dataservices.rest.public\_sources module
+------------------------------------------------------
+
+.. automodule:: btgsolutions_dataservices.rest.public_sources
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 btgsolutions\_dataservices.rest.quotes module
 ---------------------------------------------
 
@@ -116,10 +172,34 @@ btgsolutions\_dataservices.rest.quotes module
    :undoc-members:
    :show-inheritance:
 
+btgsolutions\_dataservices.rest.reference\_data module
+------------------------------------------------------
+
+.. automodule:: btgsolutions_dataservices.rest.reference_data
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+btgsolutions\_dataservices.rest.stock\_loan module
+--------------------------------------------------
+
+.. automodule:: btgsolutions_dataservices.rest.stock_loan
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 btgsolutions\_dataservices.rest.ticker\_last\_event module
 ----------------------------------------------------------
 
 .. automodule:: btgsolutions_dataservices.rest.ticker_last_event
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+btgsolutions\_dataservices.rest.ticker\_last\_event\_polling module
+-------------------------------------------------------------------
+
+.. automodule:: btgsolutions_dataservices.rest.ticker_last_event_polling
    :members:
    :undoc-members:
    :show-inheritance:
