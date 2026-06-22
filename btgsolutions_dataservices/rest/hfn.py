@@ -1,15 +1,17 @@
 
-from typing import Optional
+from typing import Optional, List
 from ..exceptions import BadResponse
 import requests
-from ..config import url_apis
+from ..config import url_apis_v3
 import json
 import pandas as pd
 from .authenticator import Authenticator
 
+
 class HighFrequencyNews:
     """
-    This class provides realtime and historical news of several news .
+    This class provides latest and historical news through the HFN API,
+    with rich filtering by feed, source, language, tags, categories and free text.
 
     * Main use case:
 
@@ -18,27 +20,24 @@ class HighFrequencyNews:
     >>> hfn = HighFrequencyNews(
     >>>     api_key='YOUR_API_KEY',
     >>> )
-    >>> latest_news = hfn.latest_news(
-    >>>     n = 15,
+
+    >>> latest = hfn.get_latest_news(
+    >>>     feed='economy',
+    >>>     limit=10,
     >>> )
 
-    >>> petro_news = hfn.filter_news(
-    >>>     ticker = 'PETR4',
+    >>> petro_news = hfn.get_latest_news(
+    >>>     tags=['PETR4'],
+    >>>     text_language='portuguese',
     >>> )
 
-    >>> ibov_news = hfn.filter_news(
-    >>>     tag = 'IBOV',
+    >>> historical = hfn.get_historical_news(
+    >>>     start_date='2025-01-01T00:00:00.000Z',
+    >>>     end_date='2025-01-01T23:59:59.999Z',
+    >>>     feed='economy',
     >>> )
 
-    >>> news_21_08 = hfn.historical_news(
-    >>>     start_date = '2023-08-21',
-    >>>     end_date = '2023-08-22',
-    >>> )
-
-    >>> available_feeds = hfn.get_available_feeds()
-    >>> available_sources = hfn.get_available_sources()
-    >>> available_tickers = hfn.get_available_tickers()
-    >>> available_tags = hfn.get_available_tags()
+    >>> filters = hfn.get_available_filters()
 
     Parameters
     ----------------
@@ -46,278 +45,296 @@ class HighFrequencyNews:
         User identification key.
         Field is required.
     """
+
     def __init__(
         self,
-        api_key: Optional[str]
+        api_key: Optional[str],
     ):
         self.api_key = api_key
         self.token = Authenticator(self.api_key).token
         self.headers = {"authorization": f"authorization {self.token}"}
 
-        self.available_countries = ['brazil', 'chile']
-        self.available_feeds = ['raw', 'economy', 'politics', 'crypto', 'cvm', 'ptax']
-
-        self.available_ref_types = ['tickers','tags', 'feeds', 'sources']
-
-        self.min_news = 1
-        self.max_news = 200
-
-    def latest_news(
+    def get_latest_news(
         self,
-        feed:str='raw',
-        country:str='brazil',
-        n:int=10,
-        raw_data:bool=False
-    ):     
+        countries: Optional[List[str]] = None,
+        source_type: Optional[str] = None,
+        source: Optional[str] = None,
+        feed: Optional[str] = None,
+        text_language: Optional[str] = None,
+        tags: Optional[List[str]] = None,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
+        limit: Optional[int] = None,
+        categories: Optional[List[str]] = None,
+        text: Optional[str] = None,
+        raw_data: bool = False,
+    ):
         """
-        Latest news by feed.
+        Most recent news captured by the HFN Engine.
+        By default returns the latest 20 news (max 5000 with ``limit``).
+        All filter parameters are optional and can be combined freely.
 
         Parameters
         ----------------
+        countries: list of str
+            Filter results by one or more country codes. Matches any provided value.
+            Example: ['BR'], ['BR', 'US'].
+            Field is not required.
+        source_type: str
+            Filter results by ingestion source type.
+            Accepted values: 'rss', 'html', 'pdf'.
+            Field is not required.
+        source: str
+            Filter results by a specific news source name.
+            Example: 'Infomoney', 'Exame - Mercado'.
+            Field is not required.
         feed: str
-            News feed.
-            Example: 'raw', 'economy', 'politics', 'crypto', 'cvm'.
-            Default: 'raw'.
+            Filter results by thematic feed category.
+            Accepted values: 'politics', 'economy', 'crypto', 'technology',
+            'sports', 'health', 'commodities', 'energy', 'general'.
             Field is not required.
-        country: str
-            Country name.
-            Example: 'brazil', 'chile'.
-            Default: 'brazil'.
+        text_language: str
+            Filter results by the language of the news content.
+            Accepted values: 'portuguese', 'english', 'spanish', 'german', 'french'.
             Field is not required.
-        n: int
-            Number of news to be returned.
-            Default: 10.
+        tags: list of str
+            Filter results by one or more tags (ticker symbols, index names, etc.).
+            Matches any provided value, including substrings.
+            Example: ['PETR4'], ['PETR4', 'VALE3'].
             Field is not required.
-        raw_data: bool
-            If True, returns raw data from API, if False, returns a Pandas DataFrame.
-            Default: False.
-            Field is not required.
-        """
-        
-        if country not in self.available_countries:
-            raise Exception(f"Must provide a valid 'country' parameter. Input: '{country}'. Accepted values: {self.available_countries}")
-
-        if feed not in self.available_feeds:
-            raise Exception(f"Must provide a valid 'feed' parameter. Input: '{feed}'. Accepted values: {self.available_feeds}")
-        
-        if not self.min_news < n < self.max_news: 
-            raise Exception(f"Invalid 'n' parameter. Input: '{n}'. 'n' Must be >= {self.min_news} and <= {self.max_news}")
-
-        url = f"{url_apis}/hfn/{country}/latest_news/{feed}?n={n}"
-
-        response = requests.request("GET", url,  headers=self.headers)
-        if response.status_code == 200:
-            response_data = json.loads(response.text)
-            if raw_data:
-                return response_data
-            else: 
-                return pd.DataFrame(response_data)
-        else:
-            response = json.loads(response.text)
-            raise BadResponse(f'Error: {response.get("ApiClientError")}.\n{response.get("SuggestedAction", "")}')
-
-    def filter_news(
-        self,
-        ticker:str=None,
-        tag:str=None,
-        force:bool=True,
-        country:str='brazil',
-        raw_data:bool=False
-    ):
-        """
-        Filter news by ticker or tag. If both ticker and tag are provided, the filter will be by ticker only 
-
-        Parameters
-        ----------------
-        ticker: str
-            Ticker symbol. Will be used to filter news.
-            Example: 'VALE3', 'PETR4'.
-            Field is not required.
-        tag: str
-            Tag name. Will be used to filter news.
-            Example: 'IBOV', 'TESOURO', 'RENDA_FIXA'.
-            Field is not required.
-        force: bool
-            Force to return news even if it does not match the requested parameters.
-            Default: True
-            Example: True, False.
-            Field is required.
-        country: str
-            Country name.
-            Default: 'brazil'
-            Example: 'brazil', 'chile'.
-            Field is required.
-        raw_data: bool
-            If True, returns raw data from API, if False, returns a Pandas DataFrame.
-            Default: False.
-            Field is not required.
-        """
-        if force is True: force_str = 'true'
-        else: force_str = 'false'
-
-        if country not in self.available_countries:
-            raise Exception(f"Must provide a valid 'country' parameter. Input: '{country}'. Accepted values: {self.available_countries}")
-
-        if not isinstance(ticker, str) and not isinstance(tag, str):
-            raise Exception(f"Must provide a ticker or a tag in order to filter news")
-        elif isinstance(ticker, str):
-            url = f"{url_apis}/hfn/{country}/filter_news/tickers/{ticker}?force={force_str}"
-        else:
-            url = f"{url_apis}/hfn/{country}/filter_news/tags/{tag}?force={force_str}"
-
-        response = requests.request("GET", url,  headers=self.headers)
-        if response.status_code == 200:
-            response_data = json.loads(response.text)
-            if raw_data:
-                return response_data
-            else: 
-                return pd.DataFrame(response_data)
-        else:
-            response = json.loads(response.text)
-            raise BadResponse(f'Error: {response.get("ApiClientError")}.\n{response.get("SuggestedAction", "")}')
-
-    def historical_news(
-        self,
-        start_date:str,
-        end_date:str,
-        feed:str='raw',
-        country:str='brazil',
-        raw_data:bool=False
-    ):
-        """
-        Provide a datetime interval and get all the news registered on that interval. The interval between start_date and end_date must be 24 hours maximum.
-
-        Parameters
-        ----------------
         start_date: str
-            Upper bound for news publishing time. Supported formats: ISO Date (YYYY-MM-DD), Long Date (MMM DD YYYY), Short Date (MM/DD/YYYY).
-            Example: '2023-08-21'.
-            Field is required.
+            Lower bound for news publishing time.
+            Accepted formats: ISO 8601 date-time (``YYYY-MM-DDTHH:MM:SS.sssZ``) or date (``YYYY-MM-DD``).
+            Example: '2026-03-13T00:00:00.000Z'.
+            Field is not required.
         end_date: str
-            Lower bound for news publishing time. Supported formats: ISO Date (YYYY-MM-DD), Long Date (MMM DD YYYY), Short Date (MM/DD/YYYY).
-            Example: '2023-08-22'.
-            Field is required.
-        feed: str
-            Feed name.
-            Default: 'raw'
-            Example: 'raw', 'economy', 'politics', 'crypto', 'cvm'.
-            Field is required.
-        country: str
-            Country name.
-            Default: 'brazil'
-            Example: 'brazil', 'chile'.
-            Field is required.
+            Upper bound for news publishing time.
+            Accepted formats: ISO 8601 date-time (``YYYY-MM-DDTHH:MM:SS.sssZ``) or date (``YYYY-MM-DD``).
+            Example: '2026-03-13T23:59:59.999Z'.
+            Field is not required.
+        limit: int
+            Maximum number of news items to return (max 5000).
+            Example: 100.
+            Field is not required.
+        categories: list of str
+            Filter results by one or more category keywords extracted from news content.
+            Matches any provided value, including substrings.
+            Example: ['Petrobras'], ['Bitcoin', 'Ethereum'].
+            Field is not required.
+        text: str
+            Free text search within news title and body.
+            Example: 'trump ira', 'taxa selic'.
+            Field is not required.
         raw_data: bool
             If True, returns raw data from API, if False, returns a Pandas DataFrame.
             Default: False.
             Field is not required.
         """
-        if country not in self.available_countries:
-            raise Exception(f"Must provide a valid 'country' parameter. Input: '{country}'. Accepted values: {self.available_countries}")
+        params = {}
+        if countries:
+            params['countries'] = ','.join(countries)
+        if source_type:
+            params['source_type'] = source_type
+        if source:
+            params['source'] = source
+        if feed:
+            params['feed'] = feed
+        if text_language:
+            params['text_language'] = text_language
+        if tags:
+            params['tags'] = ','.join(tags)
+        if start_date:
+            params['start_date'] = start_date
+        if end_date:
+            params['end_date'] = end_date
+        if limit is not None:
+            params['limit'] = limit
+        if categories:
+            params['categories'] = ','.join(categories)
+        if text:
+            params['text'] = text
 
-        if feed not in self.available_feeds:
-            raise Exception(f"Must provide a valid 'feed' parameter. Input: '{feed}'. Accepted values: {self.available_feeds}")
-        
-        url = f"{url_apis}/hfn/{country}/news_history?start_date={start_date}&end_date={end_date}&feed={feed}"
-
-        response = requests.request("GET", url,  headers=self.headers)
+        url = f"{url_apis_v3}/hfn/latest-news"
+        response = requests.get(url, headers=self.headers, params=params)
         if response.status_code == 200:
-            response_data = json.loads(response.text)
+            response_data = response.json()
             if raw_data:
                 return response_data
-            else: 
+            else:
                 return pd.DataFrame(response_data)
         else:
-            response = json.loads(response.text)
-            raise BadResponse(f'Error: {response.get("ApiClientError")}.\n{response.get("SuggestedAction", "")}')
+            response_data = response.json()
+            raise BadResponse(
+                f'Error: {response_data.get("ApiClientError", "")}.\n{response_data.get("SuggestedAction", "")}'
+            )
 
-    def get_available_feeds(self, country:str='brazil'):
-        """
-        This method provides all feeds available for query.   
-
-        Parameters
-        ----------------
-        country: str
-            Country name.
-            Default: 'brazil'
-            Example: 'brazil', 'chile'.
-            Field is required.
-        """
-        return self.__get_available_reference(ref_type='feeds', country=country)
-    
-    def get_available_sources(self, country:str='brazil'):
-        """
-        This method provides all sources available for query.   
-
-        Parameters
-        ----------------
-        country: str
-            Country name.
-            Default: 'brazil'
-            Example: 'brazil', 'chile'.
-            Field is required.
-        """
-        return self.__get_available_reference(ref_type='sources', country=country)
-    
-    def get_available_tickers(self, country:str='brazil'):
-        """
-        This method provides all tickers available for query.   
-
-        Parameters
-        ----------------
-        country: str
-            Country name.
-            Default: 'brazil'
-            Example: 'brazil', 'chile'.
-            Field is required.
-        """
-        return self.__get_available_reference(ref_type='tickers', country=country)
-
-    def get_available_tags(self, country:str='brazil'):
-        """
-        This method provides all tags available for query.   
-
-        Parameters
-        ----------------
-        country: str
-            Country name.
-            Default: 'brazil'
-            Example: 'brazil', 'chile'.
-            Field is required.
-        """
-        return self.__get_available_reference(ref_type='tags', country=country)
-
-    def __get_available_reference(
+    def get_historical_news(
         self,
-        ref_type:str,
-        country:str='brazil',
+        countries: Optional[List[str]] = None,
+        source_type: Optional[str] = None,
+        source: Optional[str] = None,
+        feed: Optional[str] = None,
+        text_language: Optional[str] = None,
+        tags: Optional[List[str]] = None,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
+        limit: Optional[int] = None,
+        categories: Optional[List[str]] = None,
+        text: Optional[str] = None,
+        raw_data: bool = False,
     ):
         """
-        Inner function to query reference data by type.   
+        Provide a datetime interval and get all news registered in that interval.
+        All filter parameters are optional and can be combined freely.
 
         Parameters
         ----------------
-        ref_type: str
-            Reference type.
-            Example: 'brazil', 'chile'.
-            Field is required.
-        country: str
-            Country name.
-            Default: 'brazil'
-            Example: 'brazil', 'chile'.
-            Field is required.
+        countries: list of str
+            Filter results by one or more country codes. Matches any provided value.
+            Example: ['BR'], ['BR', 'US'].
+            Field is not required.
+        source_type: str
+            Filter results by ingestion source type.
+            Accepted values: 'rss', 'html', 'pdf'.
+            Field is not required.
+        source: str
+            Filter results by a specific news source name.
+            Example: 'Infomoney', 'Exame - Mercado'.
+            Field is not required.
+        feed: str
+            Filter results by thematic feed category.
+            Accepted values: 'politics', 'economy', 'crypto', 'technology',
+            'sports', 'health', 'commodities', 'energy', 'general'.
+            Field is not required.
+        text_language: str
+            Filter results by the language of the news content.
+            Accepted values: 'portuguese', 'english', 'spanish', 'german', 'french'.
+            Field is not required.
+        tags: list of str
+            Filter results by one or more tags (ticker symbols, index names, etc.).
+            Matches any provided value.
+            Example: ['PETR4'], ['PETR4', 'VALE3'].
+            Field is not required.
+        start_date: str
+            Lower bound for news publishing time.
+            Accepted formats: ISO 8601 date-time (``YYYY-MM-DDTHH:MM:SS.sssZ``) or date (``YYYY-MM-DD``).
+            Example: '2026-03-13T00:00:00.000Z'.
+            Field is not required.
+        end_date: str
+            Upper bound for news publishing time.
+            Accepted formats: ISO 8601 date-time (``YYYY-MM-DDTHH:MM:SS.sssZ``) or date (``YYYY-MM-DD``).
+            Example: '2026-03-13T23:59:59.999Z'.
+            Field is not required.
+        limit: int
+            Maximum number of news items to return.
+            Example: 100.
+            Field is not required.
+        categories: list of str
+            Filter results by one or more category keywords extracted from news content.
+            Matches any provided value.
+            Example: ['Petrobras'], ['Bitcoin', 'Ethereum'].
+            Field is not required.
+        text: str
+            Free text search within news title and body.
+            Example: 'trump ira', 'taxa selic'.
+            Field is not required.
+        raw_data: bool
+            If True, returns raw data from API, if False, returns a Pandas DataFrame.
+            Default: False.
+            Field is not required.
         """
-        if ref_type not in self.available_ref_types:
-            raise Exception(f"Must provide a valid 'ref_type' parameter. Input: '{ref_type}'. Accepted values: {self.available_ref_types}")
+        params = {}
+        if countries:
+            params['countries'] = ','.join(countries)
+        if source_type:
+            params['source_type'] = source_type
+        if source:
+            params['source'] = source
+        if feed:
+            params['feed'] = feed
+        if text_language:
+            params['text_language'] = text_language
+        if tags:
+            params['tags'] = ','.join(tags)
+        if start_date:
+            params['start_date'] = start_date
+        if end_date:
+            params['end_date'] = end_date
+        if limit is not None:
+            params['limit'] = limit
+        if categories:
+            params['categories'] = ','.join(categories)
+        if text:
+            params['text'] = text
 
-        if country not in self.available_countries:
-            raise Exception(f"Must provide a valid 'country' parameter. Input: '{country}'. Accepted values: {self.available_countries}")
-
-        url = f"{url_apis}/hfn/{country}/available_{ref_type}"
-
-        response = requests.request("GET", url,  headers=self.headers)
+        url = f"{url_apis_v3}/hfn/historical-news"
+        response = requests.get(url, headers=self.headers, params=params)
         if response.status_code == 200:
-            return json.loads(response.text)
+            response_data = response.json()
+            if raw_data:
+                return response_data
+            else:
+                return pd.DataFrame(response_data)
         else:
-            response = json.loads(response.text)
-            raise BadResponse(f'Error: {response.get("ApiClientError")}.\n{response.get("SuggestedAction", "")}')
+            response_data = response.json()
+            raise BadResponse(
+                f'Error: {response_data.get("ApiClientError", "")}.\n{response_data.get("SuggestedAction", "")}'
+            )
+
+    def get_available_filters(
+        self,
+        countries: Optional[List[str]] = None,
+        sources: Optional[List[str]] = None,
+        source_types: Optional[List[str]] = None,
+        feeds: Optional[List[str]] = None,
+        text_languages: Optional[List[str]] = None,
+    ):
+        """
+        Retrieve available filter values for the Latest News and Historical News endpoints.
+        Returns available countries, source types, sources, feeds and text languages.
+        All parameters are optional and can be used to narrow down the results.
+
+        Parameters
+        ----------------
+        countries: list of str
+            Filter the available results by one or more country codes. Matches any provided value.
+            Example: ['BR'].
+            Field is not required.
+        sources: list of str
+            Filter the available results by one or more source names. Matches any provided value.
+            Example: ['Bloomberg - Markets'].
+            Field is not required.
+        source_types: list of str
+            Filter the available results by one or more source types. Matches any provided value.
+            Accepted values: 'rss', 'html', 'pdf'.
+            Field is not required.
+        feeds: list of str
+            Filter the available results by one or more feeds. Matches any provided value.
+            Example: ['economy', 'crypto'].
+            Field is not required.
+        text_languages: list of str
+            Filter the available results by one or more text languages. Matches any provided value.
+            Accepted values: 'portuguese', 'english', 'spanish', 'german', 'french'.
+            Field is not required.
+        """
+        params = {}
+        if countries:
+            params['countries'] = ','.join(countries)
+        if sources:
+            params['sources'] = ','.join(sources)
+        if source_types:
+            params['source_types'] = ','.join(source_types)
+        if feeds:
+            params['feeds'] = ','.join(feeds)
+        if text_languages:
+            params['text_languages'] = ','.join(text_languages)
+
+        url = f"{url_apis_v3}/hfn/available-filters"
+        response = requests.get(url, headers=self.headers, params=params)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            response_data = response.json()
+            raise BadResponse(
+                f'Error: {response_data.get("ApiClientError", "")}.\n{response_data.get("SuggestedAction", "")}'
+            )

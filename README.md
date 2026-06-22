@@ -360,28 +360,7 @@ bulk_data.get_compressed_data(channel='98', date='2026-01-30', data_type='instru
 
 ```python
 import btgsolutions_dataservices as btg
-ws = btg.HFNWebSocketClient(api_key='YOUR_API_KEY', country='brazil')
-ws.run(on_message=lambda message: print(message))
-
-## The following is optional to keep the program running in a .py file:
-# from time import sleep
-# while True:
-#   sleep(1)
-```
-
-#### High Frequency News
-
-```python
-import btgsolutions_dataservices as btg
-hfn = btg.HighFrequencyNews(api_key='YOUR_API_KEY')
-hfn.latest_news()
-```
-
-#### High Frequency News V3 Stream
-
-```python
-import btgsolutions_dataservices as btg
-ws = btg.HFNV3WebSocketClient(api_key='YOUR_API_KEY')
+ws = btg.HFNWebSocketClient(api_key='YOUR_API_KEY')
 ws.run(on_message=lambda message: print(message))
 
 # Subscribe to live economy news in Portuguese
@@ -397,13 +376,18 @@ ws.available_filters(settings={})
 ws.unsubscribe()
 
 ws.close()
+
+## The following is optional to keep the program running in a .py file:
+# from time import sleep
+# while True:
+#   sleep(1)
 ```
 
-#### High Frequency News V3
+#### High Frequency News
 
 ```python
 import btgsolutions_dataservices as btg
-hfn = btg.HighFrequencyNewsV3(api_key='YOUR_API_KEY')
+hfn = btg.HighFrequencyNews(api_key='YOUR_API_KEY')
 
 # Latest news with filters
 hfn.get_latest_news(feed='economy', text_language='portuguese', limit=10)
@@ -414,7 +398,7 @@ hfn.get_latest_news(tags=['PETR4', 'VALE3'])
 # Historical news for a date range
 hfn.get_historical_news(
     start_date='2026-05-01T00:00:00.000Z',
-    end_date='2026-05-01T23:59:59.999Z',
+    end_date='2026-05-08T23:59:59.999Z',
     feed='economy',
 )
 

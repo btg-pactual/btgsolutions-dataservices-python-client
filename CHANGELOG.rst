@@ -1,3 +1,118 @@
+4.0.0 (2026-06-22)
+
+
+Removed
+
+- ``HFNV3WebSocketClient`` — merged into ``HFNWebSocketClient`` (#1)
+- ``HighFrequencyNewsV3`` — merged into ``HighFrequencyNews`` (#2)
+
+
+Changed
+
+- ``HFNWebSocketClient`` now connects to the HFN V3 WebSocket with subscribe/unsubscribe, on-demand ``latest_news``, ``available_filters``, ``post_metrics`` and ``watch_metrics`` (#1)
+- ``HighFrequencyNews`` now uses the HFN V3 REST API with ``get_latest_news``, ``get_historical_news`` and ``get_available_filters`` (#2)
+
+
+Migration guide
+---------------
+
+The class names ``HFNWebSocketClient`` and ``HighFrequencyNews`` are unchanged, but their
+method signatures changed completely. Update your calls as shown below.
+
+
+WebSocket — HFNWebSocketClient
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The constructor no longer accepts ``stream_type`` or ``country``. The connection model
+changed from a receive-only stream to a bidirectional protocol where you subscribe with
+filter settings after connecting.
+
+Before (≤ v3.2)::
+
+    ws = HFNWebSocketClient(api_key='YOUR_API_KEY', stream_type='realtime', country='brazil')
+    ws.run()
+    ws.get_latest_news()
+    ws.close()
+
+After (v4.0)::
+
+    ws = HFNWebSocketClient(api_key='YOUR_API_KEY')
+    ws.run()
+    ws.subscribe(settings={'countries': ['BR']})  # replaces stream_type + country in the constructor
+    ws.latest_news(settings={'limit': '10'})      # replaces get_latest_news()
+    ws.close()
+
+Parameter mapping:
+
++------------------------------+----------------------------------------------------+
+| Before                       | After                                              |
++==============================+====================================================+
+| ``country='brazil'``         | ``ws.subscribe(settings={'countries': ['BR']})``   |
++------------------------------+----------------------------------------------------+
+| ``country='chile'``          | ``ws.subscribe(settings={'countries': ['CL']})``   |
++------------------------------+----------------------------------------------------+
+| ``stream_type='realtime'``   | default — all subscriptions are real-time          |
++------------------------------+----------------------------------------------------+
+| ``ws.get_latest_news()``     | ``ws.latest_news(settings={})``                    |
++------------------------------+----------------------------------------------------+
+
+
+REST — HighFrequencyNews
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+All method names were replaced. Country names also changed from full strings to ISO codes
+inside a list.
+
+Method mapping:
+
++------------------------------------------------------------------+--------------------------------------------------------------------+
+| Before (≤ v3.2)                                                  | After (v4.0)                                                       |
++==================================================================+====================================================================+
+| ``hfn.latest_news(feed='economy', country='brazil', n=10)``      | ``hfn.get_latest_news(feed='economy', countries=['BR'], limit=10)``|
++------------------------------------------------------------------+--------------------------------------------------------------------+
+| ``hfn.filter_news(ticker='PETR4')``                              | ``hfn.get_latest_news(tags=['PETR4'])``                            |
++------------------------------------------------------------------+--------------------------------------------------------------------+
+| ``hfn.filter_news(tag='IBOV')``                                  | ``hfn.get_latest_news(tags=['IBOV'])``                             |
++------------------------------------------------------------------+--------------------------------------------------------------------+
+| ``hfn.historical_news(start_date=..., end_date=..., feed=...)``  | ``hfn.get_historical_news(start_date=..., end_date=..., feed=...)``|
++------------------------------------------------------------------+--------------------------------------------------------------------+
+| ``hfn.get_available_feeds()``                                    | ``hfn.get_available_filters()`` → key ``feeds``                    |
++------------------------------------------------------------------+--------------------------------------------------------------------+
+| ``hfn.get_available_sources()``                                  | ``hfn.get_available_filters()`` → key ``sources``                  |
++------------------------------------------------------------------+--------------------------------------------------------------------+
+| ``hfn.get_available_tickers()``                                  | ``hfn.get_available_filters()`` → inspect returned data            |
++------------------------------------------------------------------+--------------------------------------------------------------------+
+| ``hfn.get_available_tags()``                                     | ``hfn.get_available_filters()`` → inspect returned data            |
++------------------------------------------------------------------+--------------------------------------------------------------------+
+
+Side-by-side example:
+
+Before (≤ v3.2)::
+
+    hfn = HighFrequencyNews(api_key='YOUR_API_KEY')
+
+    latest    = hfn.latest_news(feed='economy', country='brazil', n=15)
+    by_ticker = hfn.filter_news(ticker='PETR4', country='brazil')
+    by_tag    = hfn.filter_news(tag='IBOV')
+    history   = hfn.historical_news(start_date='2026-05-21', end_date='2026-05-28', feed='raw')
+    feeds     = hfn.get_available_feeds()
+    sources   = hfn.get_available_sources()
+
+After (v4.0)::
+
+    hfn = HighFrequencyNews(api_key='YOUR_API_KEY')
+
+    latest    = hfn.get_latest_news(feed='economy', countries=['BR'], limit=15)
+    by_ticker = hfn.get_latest_news(tags=['PETR4'], countries=['BR'])
+    by_tag    = hfn.get_latest_news(tags=['IBOV'])
+    history   = hfn.get_historical_news(start_date='2026-05-21', end_date='2026-05-28', feed='economy')
+    filters   = hfn.get_available_filters()  # feeds, sources, countries and more in a single call
+
+.. note::
+   ``feed='raw'`` no longer exists. Call ``get_latest_news()`` without a ``feed`` argument
+   to receive unfiltered news.
+
+
 3.3.0 (2026-06-19)
 
 
