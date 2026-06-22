@@ -402,7 +402,7 @@ class AlternativeDataCompanies:
             End date in YYYY-MM-DD format.
             Field is not required.
         event: str
-            Event type filter: 'appointed' or 'resigned'.
+            Event type filter: 'elected' or 'resigned'.
             Field is not required.
         limit: int
             Maximum number of results to return.
@@ -413,6 +413,42 @@ class AlternativeDataCompanies:
             "start_date": start_date,
             "end_date": end_date,
             "event": event,
+            "limit": limit,
+        })
+
+    def get_assemblies(
+        self,
+        company_id: str,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
+        limit: int = 50,
+    ) -> dict:
+        """
+        Shareholder assembly index (AGO / AGE) for a Brazilian company.
+
+        Returns one entry per assembly date with the assembly type, agenda items,
+        and CVM RAD URLs for the Ata (full minutes), Sumário das Decisões (when
+        available), and Edital de Convocação.
+
+        Parameters
+        ----------------
+        company_id: str
+            Company identifier (CNPJ, CVM code, B3 ticker, or company name).
+            Field is required. Example: 'VALE3'.
+        start_date: str
+            Start date in YYYY-MM-DD format.
+            Field is not required.
+        end_date: str
+            End date in YYYY-MM-DD format.
+            Field is not required.
+        limit: int
+            Maximum number of assemblies to return (most recent first). Max 200.
+            Field is not required. Default: 50.
+        """
+        return self._get("companies/assemblies", {
+            "company_id": company_id,
+            "start_date": start_date,
+            "end_date": end_date,
             "limit": limit,
         })
 
