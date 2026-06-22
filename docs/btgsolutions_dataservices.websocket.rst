@@ -20,14 +20,6 @@ btgsolutions\_dataservices.websocket.hfn\_websocket\_client module
    :show-inheritance:
    :undoc-members:
 
-btgsolutions\_dataservices.websocket.hfn\_v3\_websocket\_client module
-----------------------------------------------------------------------
-
-.. automodule:: btgsolutions_dataservices.websocket.hfn_v3_websocket_client
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
 btgsolutions\_dataservices.websocket.market\_data\_feed module
 --------------------------------------------------------------
 
