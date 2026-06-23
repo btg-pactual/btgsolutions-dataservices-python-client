@@ -14,6 +14,7 @@ class AlternativeDataFunds:
 
     >>> from btgsolutions_dataservices import AlternativeDataFunds
     >>> funds = AlternativeDataFunds(api_key='YOUR_API_KEY')
+    >>> funds.list_etfs()
     >>> funds.get_holdings(fund_id='73.232.530/0001-46')
     >>> funds.get_exposures(fund_id='73.232.530/0001-46')
     >>> funds.get_history(fund_id='73.232.530/0001-46')
@@ -27,13 +28,13 @@ class AlternativeDataFunds:
 
     def __init__(self, api_key: str):
         self.api_key = api_key
-        self.token = Authenticator(self.api_key).token
-        self.headers = {"authorization": f"Bearer {self.token}"}
+        self.__authenticator = Authenticator(self.api_key)
 
     def _get(self, path: str, params: dict) -> dict:
         url = f"{url_api_v1}/public-sources/{path}"
         params = {k: v for k, v in params.items() if v is not None and v != ""}
-        response = requests.get(url, params=params, headers=self.headers, timeout=30)
+        headers = {"authorization": f"Bearer {self.__authenticator.token}"}
+        response = requests.get(url, params=params, headers=headers, timeout=30)
         if response.status_code != 200:
             self._raise_error(response)
         return response.json()
@@ -46,6 +47,55 @@ class AlternativeDataFunds:
         except Exception:
             detail = response.text
         raise BadResponse(f"Error {response.status_code}: {detail}")
+
+    def list_etfs(
+        self,
+        query: Optional[str] = None,
+        issuer: Optional[str] = None,
+        source: str = "official",
+        sort_by: str = "name",
+        min_positions: int = 1,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> dict:
+        """
+        List ETFs available in the public-sources ETF registry.
+
+        Parameters
+        ----------------
+        query: str
+            Free-text filter over ticker, fund name, CNPJ, or issuer.
+            Field is not required. Example: 'BOVA'.
+        issuer: str
+            Issuer key/name filter (e.g. 'blackrock', 'btg_pactual').
+            Field is not required.
+        source: str
+            Holdings source used to compute reference_date, positions_count and
+            total_value: 'official', 'approximate', or 'index'.
+            Field is not required. Default: 'official'.
+        sort_by: str
+            Sort mode: 'name', 'ticker', 'positions_count_desc',
+            'total_value_desc', or 'total_value_asc'.
+            Field is not required. Default: 'name'.
+        min_positions: int
+            Minimum number of positions required for an ETF to be returned.
+            Field is not required. Default: 1.
+        limit: int
+            Maximum number of ETFs to return.
+            Field is not required. Default: 100.
+        offset: int
+            Number of results to skip for pagination.
+            Field is not required. Default: 0.
+        """
+        return self._get("funds/etfs", {
+            "query": query,
+            "issuer": issuer,
+            "source": source,
+            "sort_by": sort_by,
+            "min_positions": min_positions,
+            "limit": limit,
+            "offset": offset,
+        })
 
     def get_holdings(
         self,

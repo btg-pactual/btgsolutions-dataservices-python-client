@@ -28,13 +28,13 @@ class AlternativeDataOwnership:
 
     def __init__(self, api_key: str):
         self.api_key = api_key
-        self.token = Authenticator(self.api_key).token
-        self.headers = {"authorization": f"Bearer {self.token}"}
+        self.__authenticator = Authenticator(self.api_key)
 
     def _get(self, path: str, params: dict) -> dict:
         url = f"{url_api_v1}/public-sources/{path}"
         params = {k: v for k, v in params.items() if v is not None and v != ""}
-        response = requests.get(url, params=params, headers=self.headers, timeout=30)
+        headers = {"authorization": f"Bearer {self.__authenticator.token}"}
+        response = requests.get(url, params=params, headers=headers, timeout=30)
         if response.status_code != 200:
             self._raise_error(response)
         return response.json()

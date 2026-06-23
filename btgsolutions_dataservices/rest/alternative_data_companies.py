@@ -14,6 +14,7 @@ class AlternativeDataCompanies:
 
     >>> from btgsolutions_dataservices import AlternativeDataCompanies
     >>> companies = AlternativeDataCompanies(api_key='YOUR_API_KEY')
+    >>> companies.list_companies(query='PETROBRAS', jurisdiction='BR')
     >>> companies.get_board(company_id='PETR4')
     >>> companies.get_governance_summary(company_id='VALE3')
     >>> companies.get_financial_statements(company_id='ITUB4')
@@ -28,13 +29,13 @@ class AlternativeDataCompanies:
 
     def __init__(self, api_key: str):
         self.api_key = api_key
-        self.token = Authenticator(self.api_key).token
-        self.headers = {"authorization": f"Bearer {self.token}"}
+        self.__authenticator = Authenticator(self.api_key)
 
     def _get(self, path: str, params: dict) -> dict:
         url = f"{url_api_v1}/public-sources/{path}"
         params = {k: v for k, v in params.items() if v is not None and v != ""}
-        response = requests.get(url, params=params, headers=self.headers, timeout=30)
+        headers = {"authorization": f"Bearer {self.__authenticator.token}"}
+        response = requests.get(url, params=params, headers=headers, timeout=30)
         if response.status_code != 200:
             self._raise_error(response)
         return response.json()
@@ -47,6 +48,38 @@ class AlternativeDataCompanies:
         except Exception:
             detail = response.text
         raise BadResponse(f"Error {response.status_code}: {detail}")
+
+    def list_companies(
+        self,
+        query: Optional[str] = None,
+        jurisdiction: Optional[str] = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> dict:
+        """
+        List or search companies available in the public-sources company directory.
+
+        Parameters
+        ----------------
+        query: str
+            Free-text search over company name, ticker, CNPJ, or CIK.
+            Field is not required. Example: 'PETROBRAS'.
+        jurisdiction: str
+            Filter by jurisdiction: 'BR' or 'US'.
+            Field is not required.
+        limit: int
+            Maximum number of results to return.
+            Field is not required. Default: 50.
+        offset: int
+            Number of results to skip for pagination.
+            Field is not required. Default: 0.
+        """
+        return self._get("companies/list", {
+            "query": query,
+            "jurisdiction": jurisdiction,
+            "limit": limit,
+            "offset": offset,
+        })
 
     def get_board(
         self,
