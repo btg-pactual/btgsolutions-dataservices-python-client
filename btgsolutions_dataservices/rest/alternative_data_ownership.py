@@ -203,6 +203,37 @@ class AlternativeDataOwnership:
             "limit": limit,
         })
 
+    def get_notice_summary(
+        self,
+        url: str,
+        lang: str = "pt",
+        timeout: int = 120,
+    ) -> dict:
+        """
+        AI-generated summary for a CVM RAD PDF document.
+
+        Parameters
+        ----------------
+        url: str
+            CVM RAD download URL for the PDF to summarize.
+            Field is required.
+        lang: str
+            Summary language: 'pt', 'en', or 'es'.
+            Field is not required. Default: 'pt'.
+        timeout: int
+            Request timeout in seconds. AI summaries can take longer than
+            standard data endpoints when a new summary is generated.
+            Field is not required. Default: 120.
+        """
+        endpoint = f"{url_api_v1}/public-sources/companies/notices/summary"
+        params = {"url": url, "lang": lang}
+        params = {k: v for k, v in params.items() if v is not None and v != ""}
+        headers = {"authorization": f"Bearer {self.__authenticator.token}"}
+        response = requests.get(endpoint, params=params, headers=headers, timeout=timeout)
+        if response.status_code != 200:
+            self._raise_error(response)
+        return response.json()
+
     def get_ownership_control_group(self, company_id: str) -> dict:
         """
         Control group composition for a Brazilian company (CVM FRE).

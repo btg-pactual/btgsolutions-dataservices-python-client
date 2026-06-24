@@ -472,7 +472,7 @@ class AlternativeDataCompanies:
             Statement type (e.g. 'income_statement', 'balance_sheet', 'cash_flow').
             Field is not required. Default: 'income_statement'.
         quarter: str
-            Quarter filter in QTyy format (e.g. 'Q12024').
+            Brazilian quarter code filter (e.g. '1T24' or '4T24').
             Field is not required.
         reference_date: str
             Reference date in YYYY-MM-DD format.
@@ -519,7 +519,7 @@ class AlternativeDataCompanies:
             Company identifier (CNPJ, CVM code, or B3 ticker).
             Field is required. Example: 'VALE3'.
         quarter: str
-            Quarter filter in QTyy format (e.g. 'Q42024').
+            Brazilian quarter code filter (e.g. '1T24' or '4T24').
             Field is not required.
         limit: int
             Maximum number of results to return.
@@ -560,8 +560,9 @@ class AlternativeDataCompanies:
             Company identifier.
             Field is not required. Example: 'PETR4'.
         document_type: str
-            Document type: 'repurchase' (buyback programs) or 'insider'
-            (insider trading notifications).
+            Document type: 'repurchase' (buyback programs) or 'insiders'
+            (Brazilian insider trading notifications). The 'insider' alias is
+            also accepted upstream.
             Field is not required. Default: 'repurchase'.
         asset: str
             Ticker asset filter.
@@ -607,4 +608,36 @@ class AlternativeDataCompanies:
             "participant_group": participant_group,
             "limit": limit,
             "offset": offset,
+        })
+
+    def get_assemblies(
+        self,
+        company_id: str,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
+        limit: int = 50,
+    ) -> dict:
+        """
+        Shareholder assembly index (AGO/AGE) for a Brazilian company.
+
+        Parameters
+        ----------------
+        company_id: str
+            Company identifier (ticker, CNPJ or company name).
+            Field is required. Example: 'PINE4'.
+        start_date: str
+            Start date in YYYY-MM-DD format.
+            Field is not required.
+        end_date: str
+            End date in YYYY-MM-DD format.
+            Field is not required.
+        limit: int
+            Maximum number of results to return.
+            Field is not required. Default: 50.
+        """
+        return self._get("companies/assemblies", {
+            "company_id": company_id,
+            "start_date": start_date,
+            "end_date": end_date,
+            "limit": limit,
         })

@@ -1,3 +1,18 @@
+4.1.1 (2026-06-23)
+
+
+Added
+
+- Alternative data examples for ``list_companies``, ``list_etfs``, ``get_assemblies`` and ``get_notice_summary`` in the package README.
+- Documented B3 maximum theoretical margin under ``AlternativeDataMacroMarkets`` and kept the direct market-data ``investor-categories`` endpoint out of the package surface.
+- ``AlternativeDataOwnership.get_notice_summary`` for AI summaries of CVM RAD documents.
+
+Changed
+
+- Corrected financial-statement/financial-notes quarter examples to the live ``1T24``/``4T24`` format.
+- Clarified that ETF-aware fund methods accept BR ETF tickers such as ``BOVA11`` in addition to fund CNPJs.
+
+
 4.0.0 (2026-06-22)
 
 

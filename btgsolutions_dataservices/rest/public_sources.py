@@ -32,10 +32,13 @@ class PublicSources:
         api_key:str
     ):
         self.api_key = api_key
-        self.token = Authenticator(self.api_key).token
-        self.headers = {"authorization": f"Bearer {self.token}"}
+        self.__authenticator = Authenticator(self.api_key)
 
-    def get_opas(self, start_date:str, end_date:str, asset:Optional[str]=None, type:Optional[str]=None, raw_data:bool=False): 
+    @property
+    def _headers(self) -> dict:
+        return {"authorization": f"Bearer {self.__authenticator.token}"}
+
+    def get_opas(self, start_date:str, end_date:str, asset:Optional[str]=None, type:Optional[str]=None, raw_data:bool=False):
 
         """
         This method uses OPAs filtered by a range of dates (registration_date), asset or type.
@@ -59,9 +62,9 @@ class PublicSources:
             Field is not required. Default: False.
         """
 
-        url = f"{url_api_v1}/public-sources/opas?start_date={start_date}&end_date={end_date}" + (f"&asset={asset}" if asset else "") + (f"&type={type}" if type else "") 
+        url = f"{url_api_v1}/public-sources/opas?start_date={start_date}&end_date={end_date}" + (f"&asset={asset}" if asset else "") + (f"&type={type}" if type else "")
 
-        response = requests.request("GET", url,  headers=self.headers)
+        response = requests.request("GET", url, headers=self._headers)
         if response.status_code == 200:
             if raw_data:
                 return response.json()
@@ -71,7 +74,7 @@ class PublicSources:
             response = json.loads(response.text)
             raise BadResponse(f'Error: {response.get("error", "")}')
 
-    def get_share_repurchase(self, start_date:str, end_date:str, asset:Optional[str]=None, raw_data:bool=False): 
+    def get_share_repurchase(self, start_date:str, end_date:str, asset:Optional[str]=None, raw_data:bool=False):
 
         """
         This method returns a list of share repurchase transactions filtered by period (reference_date) and/or asset.
@@ -92,9 +95,9 @@ class PublicSources:
             Field is not required. Default: False.
         """
 
-        url = f"{url_api_v1}/public-sources/share-repurchase?start_date={start_date}&end_date={end_date}" + (f"&asset={asset}" if asset else "") 
+        url = f"{url_api_v1}/public-sources/share-repurchase?start_date={start_date}&end_date={end_date}" + (f"&asset={asset}" if asset else "")
 
-        response = requests.request("GET", url,  headers=self.headers)
+        response = requests.request("GET", url, headers=self._headers)
         if response.status_code == 200:
             if raw_data:
                 return response.json()

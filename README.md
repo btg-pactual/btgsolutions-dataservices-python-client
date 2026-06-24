@@ -504,6 +504,8 @@ company_data.all_financial_tables(ticker='PETR4')
 import btgsolutions_dataservices as btg
 meta = btg.AlternativeDataMetadata(api_key='YOUR_API_KEY')
 meta.get_company_directory(query='PETROBRAS', jurisdiction='BR')
+meta.list_companies(query='PETROBRAS', jurisdiction='BR')
+meta.list_etfs(query='BOVA')
 meta.get_company_sector(identifier='PETR4')
 meta.get_taxonomy(system='b3')
 meta.get_cnae(code='6422100')
@@ -520,6 +522,7 @@ meta.get_available_indicators()
 ```python
 import btgsolutions_dataservices as btg
 companies = btg.AlternativeDataCompanies(api_key='YOUR_API_KEY')
+companies.list_companies(query='PETROBRAS', jurisdiction='BR')
 companies.get_board(company_id='VALE3', body='board')
 companies.get_governance_summary(company_id='ITUB4')
 companies.get_governance_history(company_id='PETR4', start_date='2023-01-01', end_date='2024-12-31')
@@ -531,8 +534,9 @@ companies.get_corporate_registry(company_id='PETR4', direction='partners')
 companies.get_corporate_registry(company_id='PETR4', direction='investees')
 companies.get_insider_trades(company_id='AAPL', start_date='2024-01-01', end_date='2024-12-31')
 companies.get_board_changes(company_id='VALE3', event='appointed')
-companies.get_financial_statements(company_id='PETR4', statement='income_statement', quarter='Q42024')
-companies.get_financial_notes(company_id='VALE3', quarter='Q42024')
+companies.get_assemblies(company_id='PINE4')
+companies.get_financial_statements(company_id='PETR4', statement='income_statement', quarter='4T24')
+companies.get_financial_notes(company_id='VALE3', quarter='4T24')
 companies.get_disclosures(company_id='PETR4', document_type='repurchase')
 companies.get_disclosures(company_id='PETR4', document_type='insider')
 ```
@@ -551,10 +555,11 @@ people.get_appointments(person_id='slug:Jean Paul Lemann', group_by='company')
 ```python
 import btgsolutions_dataservices as btg
 funds = btg.AlternativeDataFunds(api_key='YOUR_API_KEY')
-funds.get_holdings(fund_id='73.232.530/0001-46', reference_date='2024-12-31')
-funds.get_exposures(fund_id='73.232.530/0001-46', exposure_type='asset_class')
-funds.get_history(fund_id='73.232.530/0001-46', start_date='2024-01-01', end_date='2024-12-31')
-funds.get_lookthrough(fund_id='73.232.530/0001-46')
+funds.list_etfs(query='BOVA')
+funds.get_holdings(fund_id='BOVA11', reference_date='2024-12-31')
+funds.get_exposures(fund_id='BOVA11', exposure_type='asset_class')
+funds.get_history(fund_id='BOVA11', start_date='2024-01-01', end_date='2024-12-31')
+funds.get_lookthrough(fund_id='BOVA11')
 funds.get_manager_aggregate_holdings(manager_id='ITAÚ ASSET MANAGEMENT')
 ```
 
@@ -568,6 +573,7 @@ ownership.get_ownership_current(company_id='ITUB4')
 ownership.get_ownership_history(company_id='PETR4', start_date='2023-01-01', end_date='2024-12-31')
 ownership.get_ownership_change_events(company_id='VALE3', start_date='2024-01-01', end_date='2024-12-31')
 ownership.get_ownership_official_notices(company_id='PETR4')
+ownership.get_notice_summary(url='https://www.rad.cvm.gov.br/ENETWEB/frmGerenciaPastaDeArquivos.aspx?numProtocolo=1234567')
 ownership.get_ownership_control_group(company_id='VALE3')
 ownership.get_ownership_free_float(company_id='PETR4')
 ownership.get_shareholder_holdings(shareholder_id='00.000.000/0001-91')
@@ -589,6 +595,8 @@ macro.get_maximum_theoretical_margin(asset='PETR4', report_date='2024-12-31')
 macro.get_dpmfi(start_date='2024-01', end_date='2024-12', status='dados_oficiais')
 macro.get_dpmfi_composition(bond_type='IPCA')
 ```
+
+`AlternativeDataMacroMarkets` exposes the public-sources market-data endpoint for B3 maximum theoretical margin. The direct market-data `investor-categories` endpoint is intentionally not exposed in this package.
 
 ### Reference Data
 

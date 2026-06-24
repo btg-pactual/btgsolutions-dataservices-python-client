@@ -15,9 +15,9 @@ class AlternativeDataFunds:
     >>> from btgsolutions_dataservices import AlternativeDataFunds
     >>> funds = AlternativeDataFunds(api_key='YOUR_API_KEY')
     >>> funds.list_etfs()
-    >>> funds.get_holdings(fund_id='73.232.530/0001-46')
-    >>> funds.get_exposures(fund_id='73.232.530/0001-46')
-    >>> funds.get_history(fund_id='73.232.530/0001-46')
+    >>> funds.get_holdings(fund_id='BOVA11')
+    >>> funds.get_exposures(fund_id='BOVA11')
+    >>> funds.get_history(fund_id='BOVA11')
 
     Parameters
     ----------------
@@ -112,7 +112,8 @@ class AlternativeDataFunds:
         Parameters
         ----------------
         fund_id: str
-            Fund identifier. Accepts CNPJ (BR funds/ETFs) or US fund identifier.
+            Fund identifier. Accepts a CNPJ, a BR ETF ticker such as 'BOVA11',
+            or a US fund identifier.
             Field is required. Example: '73.232.530/0001-46'.
         reference_date: str
             Reference date in YYYY-MM-DD format. Defaults to the most recent snapshot.
@@ -146,14 +147,14 @@ class AlternativeDataFunds:
         exposure_type: str = "all",
     ) -> dict:
         """
-        Portfolio exposures for a Brazilian CVM fund (asset class, issuer,
-        sector, indexer, maturity, country).
+        Portfolio exposures for a Brazilian CVM fund or ETF (asset class,
+        issuer, sector, indexer, maturity, country).
 
         Parameters
         ----------------
         fund_id: str
-            Fund CNPJ.
-            Field is required. Example: '73.232.530/0001-46'.
+            Fund CNPJ or BR ETF ticker.
+            Field is required. Example: 'BOVA11'.
         reference_date: str
             Reference date in YYYY-MM-DD format. Defaults to the most recent snapshot.
             Field is not required.
@@ -176,14 +177,15 @@ class AlternativeDataFunds:
         limit: int = 12,
     ) -> dict:
         """
-        Holdings history time-series for a Brazilian CVM fund (snapshot metadata
-        per reference date: positions count, total value, NAV).
+        History time-series for a Brazilian CVM fund or ETF. Mutual funds
+        return NAV/quota fields; ETFs return portfolio total_value and
+        positions_count.
 
         Parameters
         ----------------
         fund_id: str
-            Fund CNPJ.
-            Field is required. Example: '73.232.530/0001-46'.
+            Fund CNPJ or BR ETF ticker.
+            Field is required. Example: 'BOVA11'.
         start_date: str
             Start date in YYYY-MM-DD format.
             Field is not required.
@@ -208,14 +210,14 @@ class AlternativeDataFunds:
         limit: int = 100,
     ) -> dict:
         """
-        Look-through resolution for a fund-of-funds (resolves nested fund
-        positions to underlying assets).
+        Look-through resolution for a fund or ETF (resolves nested fund
+        positions to underlying assets when available).
 
         Parameters
         ----------------
         fund_id: str
-            Fund CNPJ.
-            Field is required.
+            Fund CNPJ or BR ETF ticker.
+            Field is required. Example: 'BOVA11'.
         reference_date: str
             Reference date in YYYY-MM-DD format. Defaults to the most recent snapshot.
             Field is not required.

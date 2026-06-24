@@ -52,8 +52,8 @@ class AlternativeDataMetadata:
 
     def get_datasets(self) -> dict:
         """
-        List the public-source market-data datasets available for discovery
-        (maximum_theoretical_margin, investor_categories).
+        List public-source datasets available for discovery. The direct
+        market-data investor-categories endpoint is not exposed by this package.
         """
         return self._get("datasets", {})
 
@@ -73,8 +73,9 @@ class AlternativeDataMetadata:
             Reference date in YYYY-MM-DD format. Defaults to the latest available day.
             Field is not required.
         dataset: str
-            Dataset to scope the listing: 'maximum_theoretical_margin',
-            'investor_categories', or 'all' (default).
+            Dataset to scope the listing: 'maximum_theoretical_margin' or
+            'all' (default). The direct investor-categories endpoint is not
+            exposed by this package.
             Field is not required. Default: 'all'.
         prefix: str
             Ticker/code prefix filter (e.g. 'PETR' to list only PETR3, PETR4, ...).
