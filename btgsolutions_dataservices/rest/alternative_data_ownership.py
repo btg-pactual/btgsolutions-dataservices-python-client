@@ -11,6 +11,10 @@ class AlternativeDataOwnership:
     structure, change events, official notices, control group, free float,
     shareholder holdings, and institutional/fund holders of assets.
 
+    Technical endpoint descriptions, parameters, known data gaps and endpoint
+    relationships are available in ``alternative_data_catalog``:
+    ``PUBLIC_SOURCES_ENDPOINTS`` and ``get_public_sources_endpoint_description``.
+
     * Main use case:
 
     >>> from btgsolutions_dataservices import AlternativeDataOwnership
@@ -57,6 +61,9 @@ class AlternativeDataOwnership:
     ) -> dict:
         """
         Top shareholders for a company.
+        Snapshot coverage can be empty. For current listed-company ownership
+        context, prefer get_ownership_current(), get_ownership_control_group()
+        or get_ownership_free_float() when this endpoint returns no rows.
 
         Parameters
         ----------------
@@ -83,6 +90,8 @@ class AlternativeDataOwnership:
     def get_ownership_current(self, company_id: str) -> dict:
         """
         Current ownership structure snapshot for a company.
+        Use this as the primary current ownership summary when top-shareholder
+        snapshots are empty or when a compact ownership object is sufficient.
 
         Parameters
         ----------------
@@ -139,6 +148,8 @@ class AlternativeDataOwnership:
     ) -> dict:
         """
         Ownership change events for a company (with inline official notices).
+        Use get_ownership_official_notices() when the question needs the filed
+        notice documents and download URLs.
 
         Parameters
         ----------------
@@ -176,6 +187,8 @@ class AlternativeDataOwnership:
     ) -> dict:
         """
         Official ownership notices (CVM IPE, SEC 13D/13G/13F, IR page structures).
+        Returned CVM RAD download URLs can be passed to get_notice_summary() for
+        an AI-generated document summary.
 
         Parameters
         ----------------
@@ -211,6 +224,8 @@ class AlternativeDataOwnership:
     ) -> dict:
         """
         AI-generated summary for a CVM RAD PDF document.
+        Use URLs returned by AlternativeDataCompanies.get_assemblies() or
+        get_ownership_official_notices().
 
         Parameters
         ----------------
@@ -237,6 +252,8 @@ class AlternativeDataOwnership:
     def get_ownership_control_group(self, company_id: str) -> dict:
         """
         Control group composition for a Brazilian company (CVM FRE).
+        Use this for who controls the company; use get_shareholder_holdings()
+        for a reverse lookup of one holder across companies.
 
         Parameters
         ----------------
@@ -347,6 +364,8 @@ class AlternativeDataOwnership:
     ) -> dict:
         """
         Funds that hold a specific asset.
+        This is the inverse relationship of fund holdings for a B3 asset and is
+        often richer than institutional-holder coverage.
 
         Parameters
         ----------------

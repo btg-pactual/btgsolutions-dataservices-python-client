@@ -4,7 +4,6 @@ import requests
 from ..config import url_api_v1
 from .authenticator import Authenticator
 import pandas as pd
-import json
 
 class PublicSources:
     """
@@ -38,6 +37,15 @@ class PublicSources:
     def _headers(self) -> dict:
         return {"authorization": f"Bearer {self.__authenticator.token}"}
 
+    @staticmethod
+    def _raise_error(response):
+        try:
+            body = response.json()
+            detail = body.get("error", body.get("ApiClientError", response.text))
+        except Exception:
+            detail = (response.text or "").strip()
+        raise BadResponse(f'Error {response.status_code}: {detail[:500]}')
+
     def get_opas(self, start_date:str, end_date:str, asset:Optional[str]=None, type:Optional[str]=None, raw_data:bool=False):
 
         """
@@ -70,9 +78,7 @@ class PublicSources:
                 return response.json()
             else:
                 return pd.DataFrame(response.json())
-        else:
-            response = json.loads(response.text)
-            raise BadResponse(f'Error: {response.get("error", "")}')
+        self._raise_error(response)
 
     def get_share_repurchase(self, start_date:str, end_date:str, asset:Optional[str]=None, raw_data:bool=False):
 
@@ -103,6 +109,4 @@ class PublicSources:
                 return response.json()
             else:
                 return pd.DataFrame(response.json())
-        else:
-            response = json.loads(response.text)
-            raise BadResponse(f'Error: {response.get("error", "")}')
+        self._raise_error(response)

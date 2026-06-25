@@ -10,6 +10,10 @@ class AlternativeDataFunds:
     This class provides fund-level alternative data: holdings snapshots,
     portfolio exposures, history, look-through, and manager aggregate holdings.
 
+    Technical endpoint descriptions, parameters, known data gaps and endpoint
+    relationships are available in ``alternative_data_catalog``:
+    ``PUBLIC_SOURCES_ENDPOINTS`` and ``get_public_sources_endpoint_description``.
+
     * Main use case:
 
     >>> from btgsolutions_dataservices import AlternativeDataFunds
@@ -60,6 +64,8 @@ class AlternativeDataFunds:
     ) -> dict:
         """
         List ETFs available in the public-sources ETF registry.
+        Use this for ETF discovery because ETFs are not returned by listed-
+        company search endpoints.
 
         Parameters
         ----------------
@@ -108,6 +114,9 @@ class AlternativeDataFunds:
     ) -> dict:
         """
         Holdings snapshot for a Brazilian CVM fund, ETF, or US fund.
+        Use this to connect funds or ETFs to underlying assets. For the inverse
+        relationship, use AlternativeDataOwnership.get_fund_holders() with a B3
+        asset ticker.
 
         Parameters
         ----------------
@@ -149,6 +158,8 @@ class AlternativeDataFunds:
         """
         Portfolio exposures for a Brazilian CVM fund or ETF (asset class,
         issuer, sector, indexer, maturity, country).
+        Use sector exposure with company sector endpoints when comparing fund
+        exposure with B3 company peer groups.
 
         Parameters
         ----------------
@@ -180,6 +191,9 @@ class AlternativeDataFunds:
         History time-series for a Brazilian CVM fund or ETF. Mutual funds
         return NAV/quota fields; ETFs return portfolio total_value and
         positions_count.
+        Always inspect returned column names: ETF history can differ from
+        mutual-fund NAV history because ETFs do not expose the same daily CVM
+        NAV filing schema.
 
         Parameters
         ----------------
@@ -212,6 +226,8 @@ class AlternativeDataFunds:
         """
         Look-through resolution for a fund or ETF (resolves nested fund
         positions to underlying assets when available).
+        Use this after holdings when nested fund positions need to be expanded
+        into underlying assets.
 
         Parameters
         ----------------

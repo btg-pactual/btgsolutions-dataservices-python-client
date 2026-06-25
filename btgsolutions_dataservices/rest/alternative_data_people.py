@@ -10,6 +10,10 @@ class AlternativeDataPeople:
     This class provides people-level alternative data: governance appointments
     for individuals across BR, US, and UK companies.
 
+    Technical endpoint descriptions, parameters and endpoint relationships are
+    available in ``alternative_data_catalog``: ``PUBLIC_SOURCES_ENDPOINTS`` and
+    ``get_public_sources_endpoint_description``.
+
     * Main use case:
 
     >>> from btgsolutions_dataservices import AlternativeDataPeople

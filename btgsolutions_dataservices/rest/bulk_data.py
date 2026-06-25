@@ -96,7 +96,14 @@ class BulkData:
         url = f"{url_apis}/marketdata/bulkdata/available-tickers?date={date}&data_type={data_type}&prefix={prefix}"
         response = requests.request("GET", url,  headers=self.headers)
 
-        response_json = response.json()
+        try:
+            response_json = response.json()
+        except ValueError as exc:
+            body = (response.text or "").strip()
+            raise BadResponse(
+                f"Error {response.status_code}: non-JSON response from bulk available-tickers. "
+                f"{body[:500]}"
+            ) from exc
         if response.status_code == 200: return response_json['tickers']
         raise BadResponse(f'Error: {response_json.get("ApiClientError", "")}.\n{response_json.get("SuggestedAction", "")}')
 

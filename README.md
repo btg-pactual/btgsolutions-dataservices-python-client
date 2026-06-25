@@ -498,7 +498,63 @@ company_data = btg.CompanyData(api_key='YOUR_API_KEY')
 company_data.all_financial_tables(ticker='PETR4')
 ```
 
+#### REST Technical Catalogs
+
+Technical endpoint descriptions for REST APIs are exported by the package so
+MCPs and other connectors can reuse the same source of truth instead of
+duplicating endpoint semantics locally.
+
+```python
+from btgsolutions_dataservices.rest import (
+    DATASERVICES_ENDPOINTS,
+    DATASERVICES_ENDPOINT_RELATIONSHIPS,
+    get_dataservices_tool_description,
+)
+
+print(get_dataservices_tool_description("get_quotes"))
+print(get_dataservices_tool_description("get_book_scope"))
+```
+
+The Data Services catalog covers quotes, candles, intraday trades, last events,
+reference data, corporate events, company fundamental data, HFN news,
+stock-loan data, bulk market data, broker reference, broker analytics and
+book-scope endpoints. It documents parameters, endpoint relationships such as
+available-ticker discovery before market-data calls, broker-reference discovery
+before broker analytics, HFN filter discovery before news queries, corporate
+events before adjusted price analysis, and book-scope constraints for
+microstructure analysis.
+
+The REST catalogs also document cross-domain relationships between Public
+Sources and market-data services: company directory resolution feeds ticker
+reference, quotes, candles, stock-loan, broker analytics and book-scope tools;
+sector classification feeds peer-market comparisons; fund holdings feed
+underlying ticker market analysis; ownership/free-float feeds liquidity context;
+and disclosures, official notices, HFN news and corporate events feed event
+window analysis.
+
 #### Alternative Data - Metadata
+
+Technical endpoint descriptions for the public-sources alternative-data APIs are
+exported by the package so MCPs and other connectors can reuse the same source
+of truth:
+
+```python
+from btgsolutions_dataservices.rest import (
+    PUBLIC_SOURCES_ENDPOINTS,
+    PUBLIC_SOURCES_ENDPOINT_RELATIONSHIPS,
+    get_public_sources_tool_description,
+)
+
+print(get_public_sources_tool_description("get_company_board"))
+```
+
+The catalog documents endpoint parameters, known data gaps, excluded endpoints,
+and relationships such as: company metadata resolving identifiers for governance
+and ownership calls; macro indicator metadata feeding macro observations; asset
+metadata feeding maximum-theoretical-margin calls; financial statement type
+metadata feeding statement queries; assemblies and ownership notices feeding
+notice summaries; and fund holdings/asset fund holders linking funds with
+company tickers.
 
 ```python
 import btgsolutions_dataservices as btg
@@ -529,7 +585,7 @@ companies.get_governance_history(company_id='PETR4', start_date='2023-01-01', en
 companies.get_governance_documents(company_id='PETR4', start_date='2024-01-01', end_date='2024-12-31')
 companies.get_governance_compensation(company_id='VALE3', fiscal_year='2024')
 companies.get_governance_related_party(company_id='ITUB4')
-companies.get_governance_beneficial_ownership(company_id='VALE3')
+companies.get_governance_beneficial_ownership(company_id='AAPL')  # UK PSC / US SEC proxy data; not BR listed-company ownership
 companies.get_corporate_registry(company_id='PETR4', direction='partners')
 companies.get_corporate_registry(company_id='PETR4', direction='investees')
 companies.get_insider_trades(company_id='AAPL', start_date='2024-01-01', end_date='2024-12-31')
@@ -560,7 +616,8 @@ funds.get_holdings(fund_id='BOVA11', reference_date='2024-12-31')
 funds.get_exposures(fund_id='BOVA11', exposure_type='asset_class')
 funds.get_history(fund_id='BOVA11', start_date='2024-01-01', end_date='2024-12-31')
 funds.get_lookthrough(fund_id='BOVA11')
-funds.get_manager_aggregate_holdings(manager_id='ITAÚ ASSET MANAGEMENT')
+# Manager aggregation requires an exact covered manager CNPJ/name, not ETF issuer slugs, ETF tickers or fund CNPJs.
+# funds.get_manager_aggregate_holdings(manager_id='...')
 ```
 
 #### Alternative Data - Ownership
@@ -593,6 +650,7 @@ macro.get_macro_indicators(indicator='comexstat', year='2024', state='SP')
 macro.get_macro_indicators(indicator='rreo', year='2024', period='6')
 macro.get_maximum_theoretical_margin(asset='PETR4', report_date='2024-12-31')
 macro.get_dpmfi(start_date='2024-01', end_date='2024-12', status='dados_oficiais')
+macro.get_dpmfi(snapshot_date='2026-06-24', limit=10)  # reproducible scoped snapshot
 macro.get_dpmfi_composition(bond_type='IPCA')
 ```
 

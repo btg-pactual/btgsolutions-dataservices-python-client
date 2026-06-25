@@ -1,3 +1,43 @@
+4.2.0 (2026-06-25)
+
+
+Added
+
+- Technical REST endpoint catalogs for Public Sources / Alternative Data and
+  Data Services, exposed from ``btgsolutions_dataservices.rest`` for MCPs and
+  other AI clients to reuse endpoint descriptions, parameters, caveats and
+  endpoint relationships.
+- Catalog coverage for company metadata, governance, ownership, funds, people,
+  macro/DPMFi, B3 maximum theoretical margin, quotes, candles, intraday trades,
+  last-event snapshots, reference data, corporate events, company fundamental
+  data, HFN news, stock-loan, bulk market data, broker analytics and BookScope.
+- Documentation of cross-endpoint relationships such as company-to-market-data
+  identifier resolution, sector peer analysis, fund-to-underlying exposure,
+  ownership/free-float-to-liquidity context, document/event-market workflows and
+  macro-to-sector/company context.
+
+Changed
+
+- Clarified that the direct market-data ``investor-categories`` endpoint remains
+  intentionally excluded from the alternative-data package surface.
+- Clarified that ``get_governance_beneficial_ownership`` is UK/US oriented
+  (Companies House PSC / SEC proxy data) and should not be used as Brazilian
+  listed-company ownership coverage.
+- Clarified that ``get_manager_aggregate_holdings`` requires a covered manager
+  CNPJ or exact manager name, not ETF tickers, ETF issuer slugs or fund CNPJs.
+- Clarified DPMFi query semantics and recommended ``snapshot_date`` or narrow
+  reference-month filters for reproducible interactive usage.
+- Updated README examples to point Brazilian ownership questions to ownership
+  endpoints and ETF questions to ETF/fund discovery and holdings workflows.
+
+Fixed
+
+- Improved non-JSON upstream error handling in ``PublicSources.get_opas``,
+  ``PublicSources.get_share_repurchase`` and
+  ``BulkData.get_available_tickers`` so callers receive a clear ``BadResponse``
+  instead of a raw JSON parsing exception.
+
+
 4.1.1 (2026-06-23)
 
 

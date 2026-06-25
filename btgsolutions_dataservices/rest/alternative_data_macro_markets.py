@@ -10,6 +10,10 @@ class AlternativeDataMacroMarkets:
     This class provides macro and market alternative data: macro indicator
     time-series, Brazilian public debt (DPMFi), and B3 maximum theoretical margin.
 
+    Technical endpoint descriptions, parameters, known data gaps and endpoint
+    relationships are available in ``alternative_data_catalog``:
+    ``PUBLIC_SOURCES_ENDPOINTS`` and ``get_public_sources_endpoint_description``.
+
     * Main use case:
 
     >>> from btgsolutions_dataservices import AlternativeDataMacroMarkets
@@ -69,6 +73,8 @@ class AlternativeDataMacroMarkets:
 
         Available indicators: selic, ipca, ipca_contributions, copom, pim, pmc,
         pms, pnad, gdp, comexstat, rreo.
+        Use AlternativeDataMetadata.get_available_indicators() first when the
+        indicator code is uncertain.
 
         Parameters
         ----------------
@@ -139,6 +145,9 @@ class AlternativeDataMacroMarkets:
     ) -> dict:
         """
         B3 maximum theoretical margin (haircut) reference data.
+        Use AlternativeDataMetadata.get_available_assets() first when asset or
+        instrument coverage is uncertain. This is a margin reference endpoint,
+        not a quote/trade feed and not the investor-categories endpoint.
 
         Parameters
         ----------------

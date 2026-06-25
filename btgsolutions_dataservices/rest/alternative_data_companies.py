@@ -10,6 +10,10 @@ class AlternativeDataCompanies:
     This class provides company-level alternative data: corporate governance,
     board composition, financial statements, and issuer disclosures.
 
+    Technical endpoint descriptions, parameters, known data gaps and endpoint
+    relationships are available in ``alternative_data_catalog``:
+    ``PUBLIC_SOURCES_ENDPOINTS`` and ``get_public_sources_endpoint_description``.
+
     * Main use case:
 
     >>> from btgsolutions_dataservices import AlternativeDataCompanies
@@ -58,6 +62,9 @@ class AlternativeDataCompanies:
     ) -> dict:
         """
         List or search companies available in the public-sources company directory.
+        Use this to resolve company identifiers before governance, ownership,
+        sector, statement or disclosure endpoints. ETFs and funds are not indexed
+        here; use fund endpoints directly with fund CNPJ or supported ETF ticker.
 
         Parameters
         ----------------
@@ -93,6 +100,8 @@ class AlternativeDataCompanies:
     ) -> dict:
         """
         Board and executive composition for a company (BR, US, or UK).
+        Use get_board_changes() for appointment/departure events and
+        get_governance_history() for historical snapshot series.
 
         Parameters
         ----------------
@@ -133,6 +142,9 @@ class AlternativeDataCompanies:
         """
         Latest governance snapshot for a company (board size, independence,
         committees, CEO name, etc.).
+        Use get_board() for individual directors/officers and
+        AlternativeDataOwnership.get_ownership_free_float() for detailed
+        free-float breakdowns.
 
         Parameters
         ----------------
@@ -152,6 +164,8 @@ class AlternativeDataCompanies:
     ) -> dict:
         """
         Monthly governance history snapshots (member counts per governance body).
+        Use get_board_changes() when the question asks for event-style changes
+        such as appointments or resignations.
 
         Parameters
         ----------------
@@ -192,6 +206,8 @@ class AlternativeDataCompanies:
     ) -> dict:
         """
         CVM IPE governance documents for a Brazilian company.
+        For share-repurchase or Brazilian insider-trading disclosures, use
+        get_disclosures() instead of this governance-only document endpoint.
 
         Parameters
         ----------------
@@ -303,15 +319,21 @@ class AlternativeDataCompanies:
         offset: int = 0,
     ) -> dict:
         """
-        Beneficial ownership records (UK PSC or BR equivalents).
+        Beneficial ownership records from UK Companies House PSC or US SEC
+        proxy DEF14A data. Brazilian companies are not available in this
+        endpoint and can return 404 / "Company not found". For Brazilian
+        listed-company ownership context, prefer
+        AlternativeDataOwnership.get_ownership_current(),
+        get_ownership_control_group() or get_ownership_free_float().
 
         Parameters
         ----------------
         company_id: str
-            Company identifier.
-            Field is required.
+            UK company number, SEC ticker/CIK, ISIN, LEI or company name.
+            Field is required. Example: 'AAPL'.
         holder_type: str
-            Holder type filter.
+            Holder classification filter such as individual, institution,
+            director, officer or ten_percent_owner.
             Field is not required.
         limit: int
             Maximum number of results to return.
@@ -385,6 +407,8 @@ class AlternativeDataCompanies:
     ) -> dict:
         """
         Insider trade transactions from SEC Forms 3/4/5 (US only).
+        Do not use this endpoint for Brazilian companies; use get_disclosures()
+        with document_type='insiders' for Brazilian insider-trading disclosures.
 
         Parameters
         ----------------
@@ -462,6 +486,9 @@ class AlternativeDataCompanies:
     ) -> dict:
         """
         Financial statements from CVM DFP/ITR filings (BR companies).
+        Use AlternativeDataMetadata.get_financial_statement_types() when the
+        statement name or alias is uncertain. Quarter filters use Brazilian
+        quarter codes such as 1T24 and 4T24.
 
         Parameters
         ----------------
@@ -553,6 +580,8 @@ class AlternativeDataCompanies:
         """
         CVM IPE regulatory disclosure documents (buyback programs and insider
         activity notifications).
+        document_type='insiders' is the Brazilian insider-trading source; use
+        get_insider_trades() only for US SEC insider transactions.
 
         Parameters
         ----------------
@@ -619,6 +648,9 @@ class AlternativeDataCompanies:
     ) -> dict:
         """
         Shareholder assembly index (AGO/AGE) for a Brazilian company.
+        Returned CVM RAD URLs can be passed to
+        AlternativeDataOwnership.get_notice_summary() for an AI-generated
+        document summary.
 
         Parameters
         ----------------

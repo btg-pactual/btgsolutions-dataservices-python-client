@@ -11,6 +11,10 @@ class AlternativeDataMetadata:
     datasets catalog, available assets, available indicators, company directory,
     financial statement types, and sector/CNAE taxonomy.
 
+    Technical endpoint descriptions, parameters, known data gaps and endpoint
+    relationships are available in ``alternative_data_catalog``:
+    ``PUBLIC_SOURCES_ENDPOINTS`` and ``get_public_sources_endpoint_description``.
+
     * Main use case:
 
     >>> from btgsolutions_dataservices import AlternativeDataMetadata
@@ -66,6 +70,8 @@ class AlternativeDataMetadata:
     ) -> dict:
         """
         List available asset codes for a dataset on a given reference date.
+        Use this before AlternativeDataMacroMarkets.get_maximum_theoretical_margin()
+        when asset or instrument coverage is uncertain.
 
         Parameters
         ----------------
@@ -95,6 +101,8 @@ class AlternativeDataMetadata:
         """
         List the available macro indicator codes for use with
         AlternativeDataMacroMarkets.get_macro_indicators().
+        Use this metadata endpoint when the requested macro series code is
+        uncertain before querying observations.
         """
         return self._get("available-indicators", {})
 
@@ -107,6 +115,10 @@ class AlternativeDataMetadata:
     ) -> dict:
         """
         Free-text company search to discover company_id values.
+        Use this before governance, ownership, sector, financial-statement or
+        disclosure endpoints when the company identifier is ambiguous. ETFs and
+        investment funds are not indexed here; call fund endpoints directly with
+        fund CNPJ or supported ETF ticker.
 
         Parameters
         ----------------
@@ -174,6 +186,8 @@ class AlternativeDataMetadata:
     ) -> dict:
         """
         List ETFs available in the public-sources ETF registry.
+        Use this for ETF discovery because ETFs are not returned by listed-
+        company search endpoints.
 
         Parameters
         ----------------
@@ -215,6 +229,8 @@ class AlternativeDataMetadata:
         """
         List the available financial statement types (e.g. income_statement,
         balance_sheet, cash_flow).
+        Use this before AlternativeDataCompanies.get_financial_statements()
+        when the statement name or alias is uncertain.
         """
         return self._get("financial-statements/types", {})
 
@@ -225,6 +241,8 @@ class AlternativeDataMetadata:
     ) -> dict:
         """
         Full sector taxonomy tree (B3 or CNAE classification system).
+        Use this with get_company_sector(), get_sector_companies() and
+        get_sectors_summary() to discover sector hierarchy and peer sets.
 
         Parameters
         ----------------
@@ -252,6 +270,8 @@ class AlternativeDataMetadata:
     def get_company_sector(self, identifier: str) -> dict:
         """
         Sector classification for a company.
+        Use get_sector_companies() with the returned sector/subsector/segment
+        values to retrieve peers in the same B3 classification.
 
         Parameters
         ----------------
@@ -271,6 +291,8 @@ class AlternativeDataMetadata:
     ) -> dict:
         """
         Companies belonging to a given sector, subsector, or segment.
+        Use get_taxonomy(), get_sectors_summary(), or get_company_sector() first
+        to discover valid B3 sector/subsector/segment values.
 
         Parameters
         ----------------
@@ -301,5 +323,7 @@ class AlternativeDataMetadata:
     def get_sectors_summary(self) -> dict:
         """
         Aggregate sector summary statistics across all classified companies.
+        Use this for sector composition discovery before selecting a B3 sector
+        for get_sector_companies().
         """
         return self._get("sectors/summary", {})
