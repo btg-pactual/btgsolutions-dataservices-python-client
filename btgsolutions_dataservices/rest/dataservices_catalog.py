@@ -44,61 +44,64 @@ DATASERVICES_ENDPOINT_RELATIONSHIPS: dict[str, str] = {
         "requesting quotes, candles, last events, bulk data or stock-loan data "
         "when the ticker universe is uncertain."
     ),
+    "crypto_ticker_discovery": (
+        "Use the crypto available-tickers endpoint for the target exchange/date "
+        "before requesting crypto candles when the supported crypto universe is "
+        "uncertain. This discovery is separate from B3 equity/derivatives "
+        "coverage."
+    ),
     "reference_enrichment": (
-        "Use ReferenceData.ticker_reference to enrich tickers with instrument "
+        "Use get_ticker_reference to enrich tickers with instrument "
         "metadata such as security id, currency, lot size and tick size before "
         "joining market-data results across tools."
     ),
     "events_price_context": (
-        "Use CorporateEvents.get to identify ex-date corporate events and then "
+        "Use get_corporate_events to identify ex-date corporate events and then "
         "compare with historical candles or quotes. If corporate_events_adj is "
         "true, historical candle prices are adjusted for events."
     ),
     "hfn_filter_discovery": (
-        "Use HighFrequencyNews.get_available_filters to discover countries, "
-        "sources, feeds and languages before calling latest or historical news "
-        "with narrow filters."
+        "Use get_news_filters to discover countries, sources, feeds and "
+        "languages before calling latest or historical news with narrow filters."
     ),
     "broker_reference": (
-        "Use BrokerReference.get to map broker codes and names before broker "
+        "Use get_broker_reference to map broker codes and names before broker "
         "analytics. Broker analytics is D0 realtime data and should not be read "
         "as historical broker flow."
     ),
     "bulk_data_discovery": (
-        "Use BulkData.get_available_tickers and get_market_data_channels before "
+        "Use list_bulk_data_tickers and list_bulk_market_data_channels before "
         "requesting ticker/date bulk data or compressed market-data files."
     ),
     "book_scope_microstructure": (
-        "BookScope.get combines trades, book snapshots and incremental book "
+        "get_book_scope combines trades, book snapshots and incremental book "
         "events for one symbol and a short time window. Use it for microstructure "
         "questions after a ticker, market_type and event window are known."
     ),
     "company_identifier_bridge": (
-        "Use AlternativeDataMetadata.get_company_directory or an MCP company "
-        "resolution workflow to translate company names, CNPJ, CVM code or ISIN "
-        "into B3 tickers before requesting quotes, candles, intraday trades, "
-        "last events, stock-loan, broker analytics or book-scope data. Use "
-        "company, governance, ownership and statement endpoints after market "
-        "data when business context is needed."
+        "Use search_companies or resolve_company_identifier to translate company "
+        "names, CNPJ, CVM code or ISIN into B3 tickers before requesting quotes, "
+        "candles, intraday trades, last events, stock-loan, broker analytics or "
+        "book-scope data. Use company, governance, ownership and statement "
+        "endpoints after market data when business context is needed."
     ),
     "sector_peer_market_bridge": (
-        "Use AlternativeDataMetadata.get_company_sector and "
-        "get_sector_companies to build a peer ticker universe, then compare "
+        "Use get_company_sector and get_companies_by_sector to build a peer "
+        "ticker universe, then compare "
         "quotes, historical candle returns, liquidity, stock-loan data or "
         "broker-flow metrics across the peer set."
     ),
     "fund_market_exposure_bridge": (
-        "Use AlternativeDataFunds.get_fund_holdings, get_fund_exposures, "
-        "get_fund_lookthrough or AlternativeDataOwnership.get_asset_fund_holders "
-        "to derive underlying tickers, then use ReferenceData, Quotes, Candles "
-        "and StockLoan to analyze the market behavior and liquidity of those "
-        "exposures."
+        "Use get_fund_holdings, get_fund_exposures, get_fund_lookthrough or "
+        "get_asset_fund_holders to derive underlying tickers, then use "
+        "get_ticker_reference, quotes, candles and stock-loan tools to analyze "
+        "the market behavior and liquidity of those exposures."
     ),
     "ownership_liquidity_bridge": (
-        "Use AlternativeDataOwnership.get_ownership_current, get_control_group "
-        "and get_free_float with quotes, historical volume, stock-loan trades "
-        "and broker analytics to contextualize float, liquidity and flow. These "
-        "joins provide context and should not be treated as proof of causality."
+        "Use get_ownership_current, get_control_group and get_free_float with "
+        "quotes, historical volume, stock-loan trades and broker analytics to "
+        "contextualize float, liquidity and flow. These joins provide context "
+        "and should not be treated as proof of causality."
     ),
     "public_document_event_bridge": (
         "Use Public Sources disclosures, assemblies, official notices, HFN news "
@@ -107,10 +110,104 @@ DATASERVICES_ENDPOINT_RELATIONSHIPS: dict[str, str] = {
         "BookScope windows for event analysis."
     ),
     "macro_market_bridge": (
-        "Use AlternativeDataMacroMarkets.get_macro_indicators with sector peer "
-        "sets, company fundamentals and historical candles to frame macro "
-        "exposure, sensitivity or co-movement. This is analytical context, not "
-        "a causal model by itself."
+        "Use get_macro_observations with sector peer sets, company fundamentals "
+        "and historical candles to frame macro exposure, sensitivity or "
+        "co-movement. This is analytical context, not a causal model by itself."
+    ),
+}
+
+
+DATASERVICES_RESULT_CONTRACTS: dict[str, str] = {
+    "quotes": (
+        "MCP result is a dataset handle whose rows are current quote snapshots, "
+        "typically one row per ticker. Common fields include ticker, price "
+        "fields, financial volume, traded volume, variation fields, "
+        "last_close_time and currency."
+    ),
+    "candles": (
+        "MCP result is a dataset handle with one row per candle. Common fields "
+        "include symbol or ticker, candle_time or date, open_time, close_time, "
+        "open_price, close_price, high_price, low_price, number_of_trades, "
+        "financial_volume and volume. Datetime fields follow the requested "
+        "timezone parameter."
+    ),
+    "crypto_candles": (
+        "MCP result is a dataset handle with crypto OHLCV time-series rows. "
+        "These rows are market-data time series only and do not join naturally "
+        "to B3 company, CVM filing, ownership, sector or governance endpoints."
+    ),
+    "intraday_candles": (
+        "MCP result is a dataset handle with current-session candle rows, often "
+        "grouped by ticker. Use the requested timezone and candle_period when "
+        "joining or aggregating."
+    ),
+    "tick_data": (
+        "MCP result is a dataset handle with current-day tick trade rows. Use "
+        "trade timestamps for ordering and compare with intraday candles or "
+        "book-scope data only after aligning timezones."
+    ),
+    "last_event": (
+        "MCP result is a dataset handle with the latest snapshot rows for the "
+        "requested event family. It is a current snapshot, not a historical "
+        "time series."
+    ),
+    "reference_data": (
+        "MCP result is a dataset handle with instrument reference rows. Common "
+        "fields include ticker or symbol, security identifiers, market type, "
+        "currency, lot size and tick size."
+    ),
+    "corporate_events": (
+        "MCP result is a dataset handle with corporate-event rows by ex-date "
+        "and ticker when available. Use it to explain price adjustment context "
+        "and then confirm issuer identity before joining with disclosures or "
+        "news."
+    ),
+    "company_data": (
+        "MCP result is a dataset handle. General-info output usually has one "
+        "row per ticker with identity, sector and description fields. "
+        "Financial-table output is table-specific and can be wide; columns may "
+        "represent periods or financial line items, so inspect the dataset "
+        "schema before ranking or comparing values. Valuation tables commonly "
+        "include fields such as EV/Revenues, EV/EBITDA, P/E, Price/BV, Dividend "
+        "Yield (%), EBITDA, EBIT, market capitalization and net debt when "
+        "available. Income-statement, balance-sheet, cash-flow, ratios, growth "
+        "and interims tables have different shapes. Values, units and currency "
+        "must be read from the returned table fields."
+    ),
+    "news": (
+        "MCP result is a dataset handle with HFN item rows. Common fields "
+        "include _id, title, url, published_at, ingested_at, metadata, tags or "
+        "processed content fields. Use published_at for event windows, inspect "
+        "metadata/tags before assigning a company, and deduplicate by _id or "
+        "url when combining latest and historical queries."
+    ),
+    "stock_loan": (
+        "MCP result is a dataset handle with stock-loan trade rows or ticker "
+        "coverage rows. Common fields include ticker, trade date, quantity and "
+        "rate, but inspect the returned schema before calculations."
+    ),
+    "bulk_data": (
+        "MCP result is a dataset handle for large tick, book or security-list "
+        "files. For data_type='trades', expect trade-level rows; for "
+        "data_type='books', expect book snapshot/order-book rows; for "
+        "data_type='trades-and-book-events', expect a mix of trade and book "
+        "event records; the security-list endpoint returns one row per listed "
+        "instrument. Exact columns depend on source file, so inspect the schema "
+        "before filtering, joining or exporting."
+    ),
+    "broker_reference": (
+        "MCP result is a dataset handle mapping broker codes and names. Use "
+        "this before broker analytics when users provide broker names."
+    ),
+    "broker_analytics": (
+        "MCP result is a dataset handle with D0 broker-flow analytics rows or "
+        "named blocks. It is current-trading-day data, not a historical broker "
+        "position or inventory database."
+    ),
+    "book_scope": (
+        "MCP result is a dataset handle with selected book-scope datasets such "
+        "as trades, book_snapshot and book_incremental. Timestamps are UTC ISO "
+        "datetimes and the request window is capped at 10 minutes."
     ),
 }
 
@@ -176,6 +273,11 @@ DATASERVICES_ENDPOINTS: dict[str, dict[str, Any]] = {
             "ticker_discovery", "company_identifier_bridge",
             "sector_peer_market_bridge",
         ],
+        "result_contract": (
+            "MCP result is a dataset handle with quote-coverage tickers for the "
+            "requested market_type and mode. It is a discovery result, not a "
+            "price snapshot."
+        ),
     },
     "HistoricalCandles.get_intraday_history_candles": {
         "category": "candles",
@@ -271,6 +373,11 @@ DATASERVICES_ENDPOINTS: dict[str, dict[str, Any]] = {
             "ticker_discovery", "company_identifier_bridge",
             "sector_peer_market_bridge",
         ],
+        "result_contract": (
+            "MCP result is a dataset handle with tickers that have historical "
+            "candle coverage for the requested market_type and date. It is a "
+            "discovery result, not candle OHLCV data."
+        ),
     },
     "HistoricalCandlesCrypto.get_intraday_history_candles": {
         "category": "crypto_candles",
@@ -289,9 +396,11 @@ DATASERVICES_ENDPOINTS: dict[str, dict[str, Any]] = {
             "candle": "Candle interval such as 1s, 30s, 1m, 5m, 15m, 30m or 1h.",
             "timezone": "Datetime timezone: America/Sao_Paulo or UTC.",
         },
-        "relationships": [
-            "ticker_discovery", "company_identifier_bridge",
-            "public_document_event_bridge",
+        "relationships": ["crypto_ticker_discovery"],
+        "caveats": [
+            "Crypto candles are standalone crypto time series; do not route them "
+            "through B3 company, CVM, ownership, sector or governance joins "
+            "unless the user explicitly asks for cross-asset context."
         ],
     },
     "HistoricalCandlesCrypto.get_interday_history_candles": {
@@ -311,7 +420,12 @@ DATASERVICES_ENDPOINTS: dict[str, dict[str, Any]] = {
             "end_date": "End date in YYYY-MM-DD.",
             "timezone": "Datetime timezone: America/Sao_Paulo or UTC.",
         },
-        "relationships": ["ticker_discovery"],
+        "relationships": ["crypto_ticker_discovery"],
+        "caveats": [
+            "Crypto candles are standalone crypto time series; do not route them "
+            "through B3 company, CVM, ownership, sector or governance joins "
+            "unless the user explicitly asks for cross-asset context."
+        ],
     },
     "HistoricalCandlesCrypto.get_available_tickers": {
         "category": "crypto_candles",
@@ -323,7 +437,15 @@ DATASERVICES_ENDPOINTS: dict[str, dict[str, Any]] = {
             "exchange": "Exchange: coinbase, mercado_bitcoin or consolidated.",
             "date": "Coverage date in YYYY-MM-DD.",
         },
-        "relationships": ["ticker_discovery"],
+        "relationships": ["crypto_ticker_discovery"],
+        "result_contract": (
+            "MCP result is a dataset handle with crypto ticker coverage for the "
+            "requested exchange/date. It is a discovery result, not candle OHLCV "
+            "data."
+        ),
+        "caveats": [
+            "Crypto coverage discovery is separate from B3 ticker discovery."
+        ],
     },
     "IntradayCandles.get_intraday_candles": {
         "category": "intraday_candles",
@@ -360,6 +482,11 @@ DATASERVICES_ENDPOINTS: dict[str, dict[str, Any]] = {
             "delay": "Data delay: realtime or delayed.",
         },
         "relationships": ["ticker_discovery"],
+        "result_contract": (
+            "MCP result is a dataset handle with tickers that have current-session "
+            "intraday-candle coverage for the requested market_type and delay. "
+            "It is a discovery result, not candle OHLCV data."
+        ),
     },
     "IntradayTickData.get_trades": {
         "category": "tick_data",
@@ -442,6 +569,11 @@ DATASERVICES_ENDPOINTS: dict[str, dict[str, Any]] = {
         "relationships": [
             "ticker_discovery", "company_identifier_bridge",
         ],
+        "result_contract": (
+            "MCP result is a dataset handle with tickers available for the "
+            "requested last-event family and data_type. It is a discovery result, "
+            "not a last trade or top-of-book snapshot."
+        ),
     },
     "ReferenceData.ticker_reference": {
         "category": "reference_data",
@@ -614,6 +746,12 @@ DATASERVICES_ENDPOINTS: dict[str, dict[str, Any]] = {
             "text_languages": "Optional language filter list.",
         },
         "relationships": ["hfn_filter_discovery"],
+        "result_contract": (
+            "MCP result is a dataset handle containing "
+            "available HFN filter values such as countries, sources, source "
+            "types, feeds and text languages. It is discovery metadata, not news "
+            "items."
+        ),
     },
     "StockLoan.get_paginated_trades": {
         "category": "stock_loan",
@@ -645,6 +783,11 @@ DATASERVICES_ENDPOINTS: dict[str, dict[str, Any]] = {
             "ticker_discovery", "company_identifier_bridge",
             "ownership_liquidity_bridge", "fund_market_exposure_bridge",
         ],
+        "result_contract": (
+            "MCP result is a dataset handle with tickers covered by stock-loan "
+            "daily-trade queries. It is a discovery result, not stock-loan trade "
+            "data."
+        ),
     },
     "BulkData.get_available_tickers": {
         "category": "bulk_data",
@@ -664,6 +807,11 @@ DATASERVICES_ENDPOINTS: dict[str, dict[str, Any]] = {
             "bulk_data_discovery", "ticker_discovery",
             "company_identifier_bridge", "book_scope_microstructure",
         ],
+        "result_contract": (
+            "MCP result is a dataset handle with bulk-data ticker coverage for "
+            "the requested date, data_type and optional prefix. It is a discovery "
+            "result, not the bulk file contents."
+        ),
         "caveats": [
             "Use a narrow prefix when possible. Broad prefixes or highly active "
             "B3 roots can be slow or time out upstream; a precise prefix such as "
@@ -683,6 +831,11 @@ DATASERVICES_ENDPOINTS: dict[str, dict[str, Any]] = {
             "date": "Coverage date in YYYY-MM-DD.",
         },
         "relationships": ["bulk_data_discovery"],
+        "result_contract": (
+            "MCP result is a dataset handle with available compressed market-data "
+            "channels for the requested date. It is discovery metadata for bulk "
+            "downloads."
+        ),
     },
     "BulkData.get_data": {
         "category": "bulk_data",
@@ -881,6 +1034,9 @@ def _compose_endpoint_description(endpoint: dict[str, Any]) -> str:
             "Related workflow: "
             + " ".join(DATASERVICES_ENDPOINT_RELATIONSHIPS[key] for key in relationships)
         )
+    result_contract = endpoint.get("result_contract") or DATASERVICES_RESULT_CONTRACTS.get(endpoint.get("category", ""))
+    if result_contract:
+        parts.append("Result contract: " + result_contract)
     caveats = endpoint.get("caveats") or []
     if caveats:
         parts.append("Caveats: " + " ".join(caveats))
@@ -902,7 +1058,11 @@ DATASERVICES_TOOL_DESCRIPTIONS: dict[str, str] = {
 def get_dataservices_endpoint(name: str) -> dict[str, Any]:
     endpoint_key = DATASERVICES_TOOL_ENDPOINTS.get(name, name)
     try:
-        return deepcopy(DATASERVICES_ENDPOINTS[endpoint_key])
+        endpoint = deepcopy(DATASERVICES_ENDPOINTS[endpoint_key])
+        result_contract = endpoint.get("result_contract") or DATASERVICES_RESULT_CONTRACTS.get(endpoint.get("category", ""))
+        if result_contract:
+            endpoint["result_contract"] = result_contract
+        return endpoint
     except KeyError:
         raise KeyError(f"Unknown Data Services endpoint or MCP tool: {name}") from None
 
