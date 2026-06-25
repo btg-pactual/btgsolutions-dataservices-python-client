@@ -1,3 +1,22 @@
+4.2.1 (2026-06-25)
+==================
+
+Changed
+
+- Added Data Services result-contract notes so MCPs can explain common output
+  shape, timestamp/unit caveats and dataset-handle inspection needs for quotes,
+  candles, company data, HFN news, broker analytics, bulk data, stock-loan,
+  BookScope and crypto candles.
+- Reworded Data Services relationship guidance to use endpoint/tool names
+  instead of Python client class names where that is clearer for AI clients.
+- Clarified that crypto candle endpoints are standalone crypto time-series
+  endpoints and should not be routed through B3 company, CVM, ownership, sector
+  or governance joins by default.
+- Clarified Data Services fundamentals and bulk-data result contracts with
+  example output shapes, and made HFN filter discovery consistently documented
+  as a dataset-handle result.
+
+
 4.2.0 (2026-06-25)
 ==================
 
@@ -16,23 +35,11 @@ Added
   identifier resolution, sector peer analysis, fund-to-underlying exposure,
   ownership/free-float-to-liquidity context, document/event-market workflows and
   macro-to-sector/company context.
-- Data Services result-contract notes so MCPs can explain common output shape,
-  timestamp/unit caveats and dataset-handle inspection needs for quotes,
-  candles, company data, HFN news, broker analytics, bulk data, stock-loan,
-  BookScope and crypto candles.
 
 Changed
 
 - Clarified that the direct market-data ``investor-categories`` endpoint remains
   intentionally excluded from the alternative-data package surface.
-- Reworded Data Services relationship guidance to use endpoint/tool names
-  instead of Python client class names where that is clearer for AI clients.
-- Clarified that crypto candle endpoints are standalone crypto time-series
-  endpoints and should not be routed through B3 company, CVM, ownership, sector
-  or governance joins by default.
-- Clarified Data Services fundamentals and bulk-data result contracts with
-  example output shapes, and made HFN filter discovery consistently documented
-  as a dataset-handle result.
 - Clarified that ``get_governance_beneficial_ownership`` is UK/US oriented
   (Companies House PSC / SEC proxy data) and should not be used as Brazilian
   listed-company ownership coverage.
