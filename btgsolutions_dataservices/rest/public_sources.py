@@ -80,7 +80,7 @@ class PublicSources:
                 return pd.DataFrame(response.json())
         self._raise_error(response)
 
-    def get_share_repurchase(self, start_date:str, end_date:str, asset:Optional[str]=None, raw_data:bool=False):
+    def get_share_repurchase(self, start_date:str, end_date:str, asset:Optional[str]=None, date_field:Optional[str]=None, raw_data:bool=False):
 
         """
         This method returns a list of share repurchase transactions filtered by period (reference_date) and/or asset.
@@ -99,9 +99,12 @@ class PublicSources:
         raw_data: bool
             If false, returns data in a dataframe. If true, returns raw data.
             Field is not required. Default: False.
+        date_field: str
+            Specific data field to filter.
+            Field is not required. Example: "delivery_date". Default: None.
         """
 
-        url = f"{url_api_v1}/public-sources/share-repurchase?start_date={start_date}&end_date={end_date}" + (f"&asset={asset}" if asset else "")
+        url = f"{url_api_v1}/public-sources/share-repurchase?start_date={start_date}&end_date={end_date}" + (f"&asset={asset}" if asset else "") + (f"&date_field={date_field}" if date_field else "")
 
         response = requests.request("GET", url, headers=self._headers)
         if response.status_code == 200:
