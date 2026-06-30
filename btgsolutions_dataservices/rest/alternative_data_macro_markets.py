@@ -250,9 +250,16 @@ class AlternativeDataMacroMarkets:
         offset: int = 0,
     ) -> dict:
         """
-        Monthly PAF composition by bond type: new issuances, end-of-month
-        outstanding stock, and share of total DPMFi debt (Prefixado, IPCA,
-        Selic, Total).
+        Monthly PAF composition by bond category: new issuances (``emissoes``),
+        end-of-month outstanding stock (``estoque_final``), and share of total
+        DPMFi debt (``perc_divida``) for Prefixado, IPCA, Selic and Total.
+
+        This endpoint covers the forward PAF projection months available in the
+        selected snapshot, usually the two months after the latest official
+        DPMFi stock observation. Filters outside the available reference-month
+        window return an empty but valid result. ``bond_type`` uses PAF
+        categories (Prefixado, IPCA, Selic, Total), not security acronyms such
+        as LTN, LFT, NTN-B or NTN-F.
 
         Parameters
         ----------------

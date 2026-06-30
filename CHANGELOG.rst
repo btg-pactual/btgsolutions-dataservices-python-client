@@ -1,3 +1,24 @@
+4.3.1 (2026-06-30)
+==================
+
+Changed
+
+- Clarified Public Sources ownership endpoint semantics in the Python client
+  docstrings and technical catalog: ``get_top_shareholders`` and
+  ``get_ownership_history`` read the normalized ``ownership_snapshot`` layer,
+  Brazilian CVM/FRE rows are periodic filing snapshots, and
+  ``reference_date`` is an exact loaded snapshot date rather than an as-of
+  lookup.
+- Updated ownership caveats and relationships to point empty snapshot cases to
+  ``get_ownership_current``, ``get_ownership_control_group``,
+  ``get_ownership_free_float``, ``get_ownership_change_events`` and
+  ``get_ownership_official_notices`` as appropriate.
+- Clarified ``get_ownership_official_notices`` response blocks
+  (``official_notices``, ``ir_page_sources`` and ``ir_structures``), asset
+  institutional-holder coverage, asset fund-holder fallback behavior and DPMFi
+  PAF composition field/window semantics.
+
+
 4.2.1 (2026-06-25)
 ==================
 

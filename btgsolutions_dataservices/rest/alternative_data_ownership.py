@@ -60,10 +60,19 @@ class AlternativeDataOwnership:
         limit: int = 20,
     ) -> dict:
         """
-        Top shareholders for a company.
-        Snapshot coverage can be empty. For current listed-company ownership
-        context, prefer get_ownership_current(), get_ownership_control_group()
-        or get_ownership_free_float() when this endpoint returns no rows.
+        Top shareholders for a company from the normalized ownership_snapshot
+        layer. For Brazilian listed companies, CVM/FRE rows are periodic filing
+        snapshots, often annual or quarterly reference dates. When
+        ``reference_date`` is omitted, the endpoint uses the latest loaded
+        snapshot per ownership_category; when ``reference_date`` is provided,
+        it must match a loaded snapshot date.
+
+        This endpoint does not synthesize current ownership from control/free
+        float tables; ``total=0`` means no matching rows were found in the
+        normalized snapshot layer for the selected company/date/category
+        filter. For Brazilian ownership questions, call get_ownership_current(),
+        get_ownership_control_group(), get_ownership_free_float() and
+        get_ownership_official_notices() when this endpoint returns no rows.
 
         Parameters
         ----------------
@@ -71,7 +80,9 @@ class AlternativeDataOwnership:
             Company identifier.
             Field is required. Example: 'VALE3'.
         reference_date: str
-            Reference date in YYYY-MM-DD format. Defaults to the most recent snapshot.
+            Reference date in YYYY-MM-DD format. Defaults to the latest loaded
+            snapshot per ownership_category. When provided, it is an exact
+            loaded snapshot date, not an as-of lookup.
             Field is not required.
         ownership_category: str
             Ownership category filter.
@@ -110,13 +121,22 @@ class AlternativeDataOwnership:
         limit: int = 12,
     ) -> dict:
         """
-        Monthly ownership history snapshots for a company.
+        Historical ownership snapshots for a company from the same normalized
+        ownership_snapshot layer used by get_top_shareholders(). For Brazilian
+        listed companies, CVM/FRE snapshots are periodic filing dates rather
+        than guaranteed calendar month-ends. This endpoint does not synthesize
+        history from current ownership or notice tables. For Brazilian ownership
+        timelines, use get_ownership_change_events() and
+        get_ownership_official_notices() as the event/document sources when
+        snapshots are empty, and get_ownership_current(),
+        get_ownership_control_group() or get_ownership_free_float() for current
+        context.
 
         Parameters
         ----------------
         company_id: str
             Company identifier.
-            Field is required. Example: 'VALE3'.
+            Field is required. Example: 'PETR4'.
         start_date: str
             Start date in YYYY-MM-DD format.
             Field is not required.
@@ -127,7 +147,7 @@ class AlternativeDataOwnership:
             Ownership category filter.
             Field is not required. Default: 'all'.
         limit: int
-            Maximum number of snapshots to return.
+            Maximum number of snapshot reference dates to return.
             Field is not required. Default: 12.
         """
         return self._get("companies/ownership-history", {
@@ -186,9 +206,18 @@ class AlternativeDataOwnership:
         limit: int = 100,
     ) -> dict:
         """
-        Official ownership notices (CVM IPE, SEC 13D/13G/13F, IR page structures).
-        Returned CVM RAD download URLs can be passed to get_notice_summary() for
-        an AI-generated document summary.
+        Official ownership notices and related IR evidence for a company.
+
+        The response can contain three list blocks:
+        ``official_notices`` (CVM/IPE ownership-related disclosures and SEC
+        13D/13G/13F summaries), ``ir_page_sources`` (candidate investor-relations
+        pages), and ``ir_structures`` (parsed IR ownership/free-float/control
+        structures, filterable by parser_status). start_date/end_date filter
+        the ``official_notices`` block; IR page/source metadata and parsed IR
+        structures are discovery/parser evidence and can still be returned when
+        the requested official-notice date range is empty. Returned CVM RAD
+        download URLs can be passed to get_notice_summary() for an AI-generated
+        document summary.
 
         Parameters
         ----------------
@@ -331,7 +360,13 @@ class AlternativeDataOwnership:
         limit: int = 50,
     ) -> dict:
         """
-        Institutional holders of a specific asset.
+        Institutional holders of a specific asset from the precomputed
+        asset-holder layer. Coverage can be sparse for B3 tickers. This
+        endpoint does not run the live fund-portfolio/ETF holding lookup used
+        by get_fund_holders(); when this endpoint returns no holders,
+        get_fund_holders() is often the richer inverse relationship for
+        Brazilian assets because it uses fund portfolio and ETF holding
+        snapshots.
 
         Parameters
         ----------------
@@ -363,9 +398,10 @@ class AlternativeDataOwnership:
         limit: int = 50,
     ) -> dict:
         """
-        Funds that hold a specific asset.
+        Funds or ETFs that hold a specific asset.
         This is the inverse relationship of fund holdings for a B3 asset and is
-        often richer than institutional-holder coverage.
+        often richer than institutional-holder coverage because it uses fund
+        portfolio and ETF holding snapshots.
 
         Parameters
         ----------------

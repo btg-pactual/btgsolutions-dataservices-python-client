@@ -34,9 +34,37 @@ PUBLIC_SOURCES_CONVENTIONS: dict[str, str] = {
 
 PUBLIC_SOURCES_DATA_GAPS: dict[str, str] = {
     "get_top_shareholders": (
-        "Shareholder snapshots can be empty for listed companies. Prefer "
-        "get_ownership_current, get_control_group or get_free_float for current "
-        "ownership context when this endpoint returns no rows."
+        "Top-shareholder snapshots come from the normalized ownership_snapshot "
+        "layer. For Brazilian listed companies, CVM/FRE rows are periodic "
+        "filing snapshots, often annual or quarterly reference dates. When "
+        "reference_date is omitted, the endpoint uses the latest loaded "
+        "snapshot per ownership_category; when reference_date is provided, it "
+        "must match an exact loaded snapshot date. For Brazilian ownership context, "
+        "prefer get_ownership_current, get_ownership_control_group, "
+        "get_ownership_free_float and get_ownership_official_notices when this "
+        "endpoint returns no rows. "
+        "This endpoint does not synthesize top holders from current ownership "
+        "or free-float tables."
+    ),
+    "get_ownership_history": (
+        "Ownership history uses the same normalized ownership_snapshot layer as "
+        "top-shareholders and returns only loaded snapshot reference dates. "
+        "For Brazilian listed companies, CVM/FRE snapshots are periodic filing "
+        "dates rather than guaranteed calendar month-ends. It can return an "
+        "empty snapshots list when the snapshot layer has no rows for the "
+        "selected company/date/category filter. Use get_ownership_change_events "
+        "and get_ownership_official_notices for event/document timelines when "
+        "snapshots are empty; this endpoint does not synthesize history from "
+        "notice or current-ownership tables."
+    ),
+    "get_ownership_official_notices": (
+        "The response has multiple evidence blocks: official_notices, "
+        "ir_page_sources and ir_structures. start_date/end_date filter the "
+        "official_notices block; IR page/source metadata or parsed IR "
+        "structures can still be returned when that official-notice range is "
+        "empty. Use official_notices download_url values with "
+        "get_notice_summary; use ir_page_sources/ir_structures as discovery or "
+        "parser-status evidence, not as filed notice documents."
     ),
     "get_beneficial_ownership": (
         "Coverage is UK/US oriented: UK Companies House PSC and US SEC proxy "
@@ -45,8 +73,13 @@ PUBLIC_SOURCES_DATA_GAPS: dict[str, str] = {
         "and free-float endpoints for Brazilian ownership context."
     ),
     "get_asset_institutional_holders": (
-        "Institutional-holder coverage can be sparse. get_asset_fund_holders "
-        "often has richer data for B3-listed assets."
+        "Institutional-holder coverage can be sparse for B3-listed assets and "
+        "can return zero rows for tickers that still have fund-holder or ETF "
+        "holder coverage. This endpoint reads the precomputed asset-holder "
+        "layer and ownership_snapshot fund_holder fallback; it does not run the "
+        "live fund-portfolio/ETF holding lookup used by get_asset_fund_holders. "
+        "Use get_asset_fund_holders for Brazilian assets when this endpoint is "
+        "empty."
     ),
     "get_disclosure_documents_repurchase": (
         "Share-repurchase disclosure coverage can be thin for many companies. "
@@ -63,6 +96,14 @@ PUBLIC_SOURCES_DATA_GAPS: dict[str, str] = {
         "DPMFi can be slow when queried without a snapshot or reference-month "
         "filter. Prefer snapshot_date for reproducibility and start_date/end_date "
         "in YYYY-MM when a narrow period is known."
+    ),
+    "get_dpmfi_composition": (
+        "DPMFi PAF composition is a forward projection table. The latest "
+        "snapshot usually covers only the two reference months after the latest "
+        "official DPMFi stock observation; older or outside-window "
+        "start_date/end_date filters can return zero rows. bond_type uses PAF "
+        "categories Prefixado, IPCA, Selic or Total, not security acronyms such "
+        "as LTN, LFT, NTN-B or NTN-F."
     ),
 }
 
@@ -439,8 +480,11 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
         "method": "GET",
         "client": "AlternativeDataMacroMarkets",
         "description": (
-            "Get DPMFi PAF composition projections: issuances, maturities and "
-            "final stock by bond type for months after the latest official data."
+            "Get DPMFi PAF composition projections: new issuances, "
+            "end-of-month outstanding stock and share of total DPMFi debt by "
+            "bond category for the forward months available in the selected "
+            "snapshot. Returned row fields are reference_date, bond_type, "
+            "emissoes, estoque_final and perc_divida."
         ),
         "parameters": {
             "start_date": "Reference month start in YYYY-MM.",
@@ -450,6 +494,7 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
             "limit": "Maximum number of rows.",
             "offset": "Pagination offset.",
         },
+        "caveats": [PUBLIC_SOURCES_DATA_GAPS["get_dpmfi_composition"]],
     },
     "AlternativeDataCompanies.get_board": {
         "category": "companies",
@@ -885,12 +930,17 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
         "method": "GET",
         "client": "AlternativeDataOwnership",
         "description": (
-            "Get top shareholders for a listed company when shareholder snapshots "
-            "are loaded."
+            "Get top shareholders for a company from the normalized "
+            "ownership_snapshot layer when shareholder-level snapshots are "
+            "available. Brazilian CVM/FRE rows are periodic filing snapshots."
         ),
         "parameters": {
             "company_id": PUBLIC_SOURCES_CONVENTIONS["company_id"],
-            "reference_date": "Reference date in YYYY-MM-DD; omitted means latest snapshot.",
+            "reference_date": (
+                "Reference date in YYYY-MM-DD; omitted means latest loaded "
+                "snapshot per ownership_category. Provided values are exact "
+                "loaded snapshot dates, not as-of lookups."
+            ),
             "ownership_category": "Ownership category filter when supported.",
             "limit": "Maximum number of shareholders.",
         },
@@ -921,21 +971,23 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
         "method": "GET",
         "client": "AlternativeDataOwnership",
         "description": (
-            "Get historical ownership snapshots for a company. Use "
-            "ownership_category to filter ordinary, preferred or total categories "
-            "when supported."
+            "Get historical ownership snapshots for a company from the "
+            "normalized ownership_snapshot layer. Brazilian CVM/FRE snapshots "
+            "are periodic filing dates, not guaranteed month-end series. Use "
+            "ownership_category to filter holder categories when supported."
         ),
         "parameters": {
             "company_id": PUBLIC_SOURCES_CONVENTIONS["company_id"],
             "start_date": "Start date in YYYY-MM-DD.",
             "end_date": "End date in YYYY-MM-DD.",
             "ownership_category": "Ownership category filter when supported.",
-            "limit": "Maximum number of snapshots.",
+            "limit": "Maximum number of snapshot reference dates.",
         },
         "relationships": [
             "company_resolution", "ownership_fallback",
             "ownership_liquidity_bridge",
         ],
+        "caveats": [PUBLIC_SOURCES_DATA_GAPS["get_ownership_history"]],
     },
     "AlternativeDataOwnership.get_ownership_change_events": {
         "category": "ownership",
@@ -965,9 +1017,10 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
         "method": "GET",
         "client": "AlternativeDataOwnership",
         "description": (
-            "Get official CVM/IPE ownership participation notices for a company. "
-            "Use this to find filed documents and download URLs about shareholder "
-            "participation changes."
+            "Get official ownership notices and related IR evidence for a "
+            "company. The response can contain official_notices, ir_page_sources "
+            "and ir_structures; use official_notices download_url values for "
+            "document summaries."
         ),
         "parameters": {
             "company_id": PUBLIC_SOURCES_CONVENTIONS["company_id"],
@@ -980,6 +1033,7 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
             "company_resolution", "ownership_fallback", "document_summary",
             "ownership_liquidity_bridge", "document_market_event_bridge",
         ],
+        "caveats": [PUBLIC_SOURCES_DATA_GAPS["get_ownership_official_notices"]],
     },
     "AlternativeDataOwnership.get_notice_summary": {
         "category": "ownership",
@@ -1055,8 +1109,9 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
         "method": "GET",
         "client": "AlternativeDataOwnership",
         "description": (
-            "Get institutional holders of an asset. identifier defaults to a B3 "
-            "ticker when identifier_type='b3_ticker'."
+            "Get institutional holders of an asset from the precomputed "
+            "asset-holder layer. identifier defaults to a B3 ticker when "
+            "identifier_type='b3_ticker'."
         ),
         "parameters": {
             "identifier": PUBLIC_SOURCES_CONVENTIONS["asset_identifier"],
@@ -1073,8 +1128,9 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
         "method": "GET",
         "client": "AlternativeDataOwnership",
         "description": (
-            "Get investment funds holding a given asset. identifier defaults to "
-            "a B3 ticker when identifier_type='b3_ticker'."
+            "Get investment funds or ETFs holding a given asset using fund "
+            "portfolio and ETF holding snapshots. identifier defaults to a B3 "
+            "ticker when identifier_type='b3_ticker'."
         ),
         "parameters": {
             "identifier": PUBLIC_SOURCES_CONVENTIONS["asset_identifier"],
