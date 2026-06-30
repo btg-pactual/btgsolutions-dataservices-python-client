@@ -160,6 +160,10 @@ class AlternativeDataFunds:
         issuer, sector, indexer, maturity, country).
         Use sector exposure with company sector endpoints when comparing fund
         exposure with B3 company peer groups.
+        Exposure dimensions are source-dependent: for Brazilian ETFs, issuer
+        exposure can use ticker-like labels and country exposure can be empty
+        when not classified by the source. Use holdings for constituent-level
+        economic exposure when a dimension is sparse.
 
         Parameters
         ----------------
@@ -228,6 +232,10 @@ class AlternativeDataFunds:
         positions to underlying assets when available).
         Use this after holdings when nested fund positions need to be expanded
         into underlying assets.
+        For direct-equity ETFs, look-through can return opaque asset_key values
+        or zero lookthrough_weight when nested weights cannot be resolved. In
+        those cases, use get_holdings() and get_exposures() for exposure
+        analysis.
 
         Parameters
         ----------------

@@ -103,6 +103,13 @@ class AlternativeDataCompanies:
         Use get_board_changes() for appointment/departure events and
         get_governance_history() for historical snapshot series.
 
+        For Brazilian filings, ``body='board'`` can include Conselho Fiscal
+        rows alongside Conselho de Administracao rows. For a board-of-directors
+        answer, filter returned rows by governance_body or role. Committee
+        responses can include broad aggregate groups such as Outros Comites; do
+        not infer granular committee names unless they are present in returned
+        fields.
+
         Parameters
         ----------------
         company_id: str
@@ -475,7 +482,7 @@ class AlternativeDataCompanies:
 
     def get_financial_statements(
         self,
-        company_id: str,
+        company_id: Optional[str] = None,
         statement: str = "income_statement",
         quarter: Optional[str] = None,
         reference_date: Optional[str] = None,
@@ -490,11 +497,15 @@ class AlternativeDataCompanies:
         statement name or alias is uncertain. Quarter filters use Brazilian
         quarter codes such as 1T24 and 4T24.
 
+        Omit ``company_id`` only for universe-level screens or rankings; in
+        that mode, paginate with ``limit``/``offset`` and deduplicate repeated
+        filings by company and source document version before ranking.
+
         Parameters
         ----------------
         company_id: str
             Company identifier (CNPJ, CVM code, or B3 ticker).
-            Field is required. Example: 'PETR4'.
+            Field is not required for universe-level screens. Example: 'PETR4'.
         statement: str
             Statement type (e.g. 'income_statement', 'balance_sheet', 'cash_flow').
             Field is not required. Default: 'income_statement'.
@@ -505,7 +516,9 @@ class AlternativeDataCompanies:
             Reference date in YYYY-MM-DD format.
             Field is not required.
         statement_type: str
-            Statement type filter (e.g. 'DFP', 'ITR').
+            Statement presentation/filter when supported by the endpoint, such
+            as 'consolidated' or 'individual'. Some payloads also expose filing
+            source fields such as DFP/ITR separately; inspect returned columns.
             Field is not required.
         account_code: str
             Specific account code filter.

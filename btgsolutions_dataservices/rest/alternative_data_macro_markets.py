@@ -76,17 +76,25 @@ class AlternativeDataMacroMarkets:
         Use AlternativeDataMetadata.get_available_indicators() first when the
         indicator code is uncertain.
 
+        Macro rows are heterogeneous across sources. Inspect returned indicator,
+        source, type/subseries, unit and date fields before aggregating values.
+        Aggregate aliases such as ``ipca`` can return valid aggregate rows even
+        when related granular series such as ``ipca_contributions`` are listed
+        separately in metadata.
+
         Parameters
         ----------------
         indicator: str
             Macro indicator code.
             Field is required. Example: 'selic'.
         start_date: str
-            Start of the query period in YYYY-MM format.
-            Field is not required. Example: '2024-01'.
+            Start of the query period in YYYY-MM-DD format when supported by
+            the indicator.
+            Field is not required. Example: '2024-01-01'.
         end_date: str
-            End of the query period in YYYY-MM format.
-            Field is not required. Example: '2024-12'.
+            End of the query period in YYYY-MM-DD format when supported by the
+            indicator.
+            Field is not required. Example: '2024-12-31'.
         year: str
             Four-digit year filter (ComexStat and RREO).
             Field is not required.
@@ -148,6 +156,10 @@ class AlternativeDataMacroMarkets:
         Use AlternativeDataMetadata.get_available_assets() first when asset or
         instrument coverage is uncertain. This is a margin reference endpoint,
         not a quote/trade feed and not the investor-categories endpoint.
+        ``discount_margin`` is returned as a percentage value from the B3
+        reference file, not as a decimal fraction. ``base_value`` is the B3
+        file's reference/base value and should not be treated as a live quote
+        or a credit decision value.
 
         Parameters
         ----------------
@@ -170,10 +182,10 @@ class AlternativeDataMacroMarkets:
             End date of the query period in YYYY-MM-DD format.
             Field is not required.
         min_margin: float
-            Lower bound filter on the discount_margin (haircut) value.
+            Lower bound filter on the discount_margin (haircut) percentage value.
             Field is not required.
         max_margin: float
-            Upper bound filter on the discount_margin (haircut) value.
+            Upper bound filter on the discount_margin (haircut) percentage value.
             Field is not required.
         limit: int
             Maximum number of results to return.
@@ -207,6 +219,13 @@ class AlternativeDataMacroMarkets:
         """
         Monthly time-series of DPMFi (domestic federal public debt) outstanding
         stock broken down by bond type (NTN-B, LFT, NTN-F, LTN, Demais).
+        This endpoint returns official/projection/estimated stock series by
+        security acronym or indexer. Use get_dpmfi_composition() for PAF
+        composition projections by broad bond category.
+
+        When ``snapshot_date`` is omitted, the latest available snapshot is
+        used. To make a reproducible follow-up call, run a narrow latest query
+        and inspect the returned snapshot/partition date fields.
 
         Parameters
         ----------------
@@ -259,7 +278,8 @@ class AlternativeDataMacroMarkets:
         DPMFi stock observation. Filters outside the available reference-month
         window return an empty but valid result. ``bond_type`` uses PAF
         categories (Prefixado, IPCA, Selic, Total), not security acronyms such
-        as LTN, LFT, NTN-B or NTN-F.
+        as LTN, LFT, NTN-B or NTN-F. Do not join ``bond_type`` values one-to-one
+        with the security-acronym rows returned by get_dpmfi().
 
         Parameters
         ----------------

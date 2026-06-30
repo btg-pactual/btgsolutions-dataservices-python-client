@@ -102,7 +102,9 @@ class AlternativeDataMetadata:
         List the available macro indicator codes for use with
         AlternativeDataMacroMarkets.get_macro_indicators().
         Use this metadata endpoint when the requested macro series code is
-        uncertain before querying observations.
+        uncertain before querying observations. Treat this as discovery help,
+        then inspect returned macro rows because aggregate aliases such as
+        ipca and related granular series such as ipca_contributions can coexist.
         """
         return self._get("available-indicators", {})
 
@@ -242,7 +244,9 @@ class AlternativeDataMetadata:
         """
         Full sector taxonomy tree (B3 or CNAE classification system).
         Use this with get_company_sector(), get_sector_companies() and
-        get_sectors_summary() to discover sector hierarchy and peer sets.
+        get_sectors_summary() to discover sector hierarchy and peer sets. B3
+        labels are upstream taxonomy labels; pass exact returned sector,
+        subsector and segment strings to get_sector_companies().
 
         Parameters
         ----------------
@@ -271,7 +275,8 @@ class AlternativeDataMetadata:
         """
         Sector classification for a company.
         Use get_sector_companies() with the returned sector/subsector/segment
-        values to retrieve peers in the same B3 classification.
+        values to retrieve peers in the same B3 classification. Reuse the exact
+        returned labels, including punctuation and spelling.
 
         Parameters
         ----------------
@@ -292,7 +297,8 @@ class AlternativeDataMetadata:
         """
         Companies belonging to a given sector, subsector, or segment.
         Use get_taxonomy(), get_sectors_summary(), or get_company_sector() first
-        to discover valid B3 sector/subsector/segment values.
+        to discover valid B3 sector/subsector/segment values. Filters should
+        use exact upstream labels; normalized or guessed strings can miss rows.
 
         Parameters
         ----------------

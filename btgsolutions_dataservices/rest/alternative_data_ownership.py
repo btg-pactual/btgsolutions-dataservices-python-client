@@ -73,6 +73,10 @@ class AlternativeDataOwnership:
         filter. For Brazilian ownership questions, call get_ownership_current(),
         get_ownership_control_group(), get_ownership_free_float() and
         get_ownership_official_notices() when this endpoint returns no rows.
+        Some responses can include multiple rows for the same holder across
+        share classes, ownership categories, filings or source protocols;
+        inspect category, class, protocol/source and reference date before
+        aggregating percentages.
 
         Parameters
         ----------------
@@ -103,6 +107,8 @@ class AlternativeDataOwnership:
         Current ownership structure snapshot for a company.
         Use this as the primary current ownership summary when top-shareholder
         snapshots are empty or when a compact ownership object is sufficient.
+        Reference dates usually come from CVM/FRE reporting periods or parsed
+        IR structures and are not necessarily strict as-of timestamps.
 
         Parameters
         ----------------
@@ -130,7 +136,8 @@ class AlternativeDataOwnership:
         get_ownership_official_notices() as the event/document sources when
         snapshots are empty, and get_ownership_current(),
         get_ownership_control_group() or get_ownership_free_float() for current
-        context.
+        context. Reference dates usually come from reporting periods and can
+        denote a filing year/base period rather than the load date.
 
         Parameters
         ----------------
@@ -283,6 +290,8 @@ class AlternativeDataOwnership:
         Control group composition for a Brazilian company (CVM FRE).
         Use this for who controls the company; use get_shareholder_holdings()
         for a reverse lookup of one holder across companies.
+        Reference dates usually come from CVM/FRE reporting periods and can
+        denote a filing year/base period rather than the load date.
 
         Parameters
         ----------------
@@ -295,6 +304,9 @@ class AlternativeDataOwnership:
     def get_ownership_free_float(self, company_id: str, limit: int = 20) -> dict:
         """
         Free float breakdown for a company.
+        Reference dates usually come from CVM/FRE reporting periods or parsed
+        IR structures and can denote a filing year/base period rather than the
+        load date.
 
         Parameters
         ----------------

@@ -33,6 +33,53 @@ PUBLIC_SOURCES_CONVENTIONS: dict[str, str] = {
 
 
 PUBLIC_SOURCES_DATA_GAPS: dict[str, str] = {
+    "get_macro_indicators": (
+        "Macro-indicator rows are heterogeneous across sources. Inspect the "
+        "returned indicator, source, type/subseries, unit and date fields before "
+        "aggregating or comparing values. The metadata endpoint is discovery "
+        "help, but accepted aggregate aliases such as ipca can still return "
+        "valid rows even when a related granular code such as "
+        "ipca_contributions is also listed. Use the returned row fields to "
+        "separate aggregate IPCA/Selic observations from contribution or "
+        "category rows."
+    ),
+    "sector_taxonomy_labels": (
+        "B3 sector, subsector and segment labels are upstream taxonomy labels. "
+        "Use the exact strings returned by get_taxonomy or get_company_sector "
+        "when calling get_sector_companies; punctuation and spelling variations "
+        "can change matches."
+    ),
+    "get_company_board": (
+        "For Brazilian companies, body='board' can include Conselho Fiscal rows "
+        "alongside Conselho de Administracao rows depending on the filing. For "
+        "a board-of-directors answer, filter returned rows by governance_body "
+        "or role to keep Conselho de Administracao only. Committee responses "
+        "can include broad aggregates such as Outros Comites; do not infer "
+        "granular committee names unless they are present in returned fields."
+    ),
+    "get_financial_statements": (
+        "company_id may be omitted only for universe-level screens or rankings. "
+        "There is no dedicated latest-quarter discovery field; when a requested "
+        "quarter returns zero rows, back off to the latest filed quarter and "
+        "state which quarter was used. statement_type is a presentation/filter "
+        "such as consolidated or individual when supported; DFP/ITR are filing "
+        "source concepts and can appear in returned fields, but they are not "
+        "the right filter for cross-company consolidated rankings."
+    ),
+    "get_fund_exposures": (
+        "Fund exposure dimensions are source-dependent. For Brazilian ETFs, "
+        "issuer exposure can be based on ticker-like issuer labels and country "
+        "exposure can be empty when the source does not classify country. Use "
+        "holdings for constituent-level economic exposure and exposures for "
+        "aggregate context."
+    ),
+    "get_fund_lookthrough": (
+        "Look-through is useful when a fund holds other funds that can be "
+        "expanded. For direct-equity ETFs, look-through can return opaque "
+        "asset_key values or zero lookthrough_weight when nested weights cannot "
+        "be resolved. In those cases, use get_fund_holdings and "
+        "get_fund_exposures for the defensible exposure analysis."
+    ),
     "get_top_shareholders": (
         "Top-shareholder snapshots come from the normalized ownership_snapshot "
         "layer. For Brazilian listed companies, CVM/FRE rows are periodic "
@@ -44,7 +91,18 @@ PUBLIC_SOURCES_DATA_GAPS: dict[str, str] = {
         "get_ownership_free_float and get_ownership_official_notices when this "
         "endpoint returns no rows. "
         "This endpoint does not synthesize top holders from current ownership "
-        "or free-float tables."
+        "or free-float tables. Some responses can include multiple rows for "
+        "the same holder across share classes, ownership categories, filings "
+        "or source protocols; inspect category, class, protocol/source and "
+        "reference date before aggregating percentages."
+    ),
+    "ownership_reporting_dates": (
+        "Brazilian ownership and free-float reference_date fields often come "
+        "from CVM/FRE reporting periods, fiscal-year bases or parsed IR "
+        "structures. They are reporting/reference dates, not necessarily the "
+        "calendar date when the data was loaded or a strict as-of timestamp; a "
+        "reference_date can be after the current calendar date when it denotes "
+        "a filing year/base period."
     ),
     "get_ownership_history": (
         "Ownership history uses the same normalized ownership_snapshot layer as "
@@ -65,6 +123,13 @@ PUBLIC_SOURCES_DATA_GAPS: dict[str, str] = {
         "empty. Use official_notices download_url values with "
         "get_notice_summary; use ir_page_sources/ir_structures as discovery or "
         "parser-status evidence, not as filed notice documents."
+    ),
+    "get_maximum_theoretical_margin": (
+        "discount_margin is the B3 haircut/desagio percentage value from the "
+        "maximum-theoretical-margin reference file, not a decimal fraction. "
+        "base_value is the B3 reference/base value in that file and should not "
+        "be treated as a live quote or a credit decision value. Use quotes and "
+        "liquidity endpoints separately when contextualizing the margin data."
     ),
     "get_beneficial_ownership": (
         "Coverage is UK/US oriented: UK Companies House PSC and US SEC proxy "
@@ -95,7 +160,10 @@ PUBLIC_SOURCES_DATA_GAPS: dict[str, str] = {
     "get_dpmfi": (
         "DPMFi can be slow when queried without a snapshot or reference-month "
         "filter. Prefer snapshot_date for reproducibility and start_date/end_date "
-        "in YYYY-MM when a narrow period is known."
+        "in YYYY-MM when a narrow period is known. When snapshot_date is omitted "
+        "the latest available snapshot is used; to discover that snapshot for a "
+        "reproducible follow-up call, make a narrow latest query and inspect "
+        "the returned snapshot/partition date fields."
     ),
     "get_dpmfi_composition": (
         "DPMFi PAF composition is a forward projection table. The latest "
@@ -103,7 +171,9 @@ PUBLIC_SOURCES_DATA_GAPS: dict[str, str] = {
         "official DPMFi stock observation; older or outside-window "
         "start_date/end_date filters can return zero rows. bond_type uses PAF "
         "categories Prefixado, IPCA, Selic or Total, not security acronyms such "
-        "as LTN, LFT, NTN-B or NTN-F."
+        "as LTN, LFT, NTN-B or NTN-F. Use get_dpmfi for official stock by "
+        "security acronym/status and get_dpmfi_composition for PAF projection "
+        "composition; do not join bond_type values one-to-one across the two."
     ),
 }
 
@@ -127,7 +197,8 @@ PUBLIC_SOURCES_ENDPOINT_RELATIONSHIPS: dict[str, str] = {
     "macro_indicator_discovery": (
         "Use AlternativeDataMetadata.get_available_indicators before "
         "AlternativeDataMacroMarkets.get_macro_indicators when the requested "
-        "macro series code is uncertain."
+        "macro series code is uncertain, then inspect the returned rows because "
+        "macro endpoints can expose both aggregate and granular series."
     ),
     "asset_discovery": (
         "Use AlternativeDataMetadata.get_available_assets to discover asset or "
@@ -142,7 +213,8 @@ PUBLIC_SOURCES_ENDPOINT_RELATIONSHIPS: dict[str, str] = {
         "Use get_taxonomy or get_sectors_summary to understand available B3/CNAE "
         "classification values, get_company_sector to classify one company, and "
         "get_sector_companies to retrieve the peer set for a sector, subsector "
-        "or segment."
+        "or segment. Pass the exact returned taxonomy labels into "
+        "get_sector_companies rather than normalized or guessed strings."
     ),
     "document_summary": (
         "Use AlternativeDataCompanies.get_assemblies or "
@@ -337,13 +409,15 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
         "description": (
             "Get the complete sector/classification taxonomy for B3 or CNAE. "
             "Use B3 for exchange sector, subsector and segment hierarchy; use "
-            "CNAE for Brazilian economic activity codes."
+            "CNAE for Brazilian economic activity codes. Reuse returned labels "
+            "exactly when filtering peer companies."
         ),
         "parameters": {
             "system": "Classification system, usually 'b3' or 'cnae'.",
             "limit": "Maximum number of taxonomy rows.",
         },
         "relationships": ["sector_peer_set", "sector_market_peer_bridge"],
+        "caveats": [PUBLIC_SOURCES_DATA_GAPS["sector_taxonomy_labels"]],
     },
     "AlternativeDataMetadata.get_cnae": {
         "category": "metadata",
@@ -365,13 +439,15 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
         "description": (
             "Get sector classification for a company or listed asset. Rows "
             "include B3 sector, subsector and segment plus registered "
-            "headquarters state and municipality when available."
+            "headquarters state and municipality when available. Reuse returned "
+            "sector labels exactly when building peer sets."
         ),
         "parameters": {"identifier": "Ticker, CNPJ, CVM code, ISIN or company name."},
         "relationships": [
             "sector_peer_set", "company_resolution",
             "company_trading_bridge", "sector_market_peer_bridge",
         ],
+        "caveats": [PUBLIC_SOURCES_DATA_GAPS["sector_taxonomy_labels"]],
     },
     "AlternativeDataMetadata.get_sector_companies": {
         "category": "metadata",
@@ -380,7 +456,9 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
         "client": "AlternativeDataMetadata",
         "description": (
             "List companies classified in a B3 sector, optionally filtered by "
-            "subsector and segment. Use active_only to restrict to active companies."
+            "subsector and segment. Use active_only to restrict to active "
+            "companies. For reliable matches, pass exact labels returned by "
+            "get_taxonomy or get_company_sector."
         ),
         "parameters": {
             "sector": "B3 sector name.",
@@ -390,6 +468,7 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
             "limit": "Maximum number of companies.",
         },
         "relationships": ["sector_peer_set", "sector_market_peer_bridge"],
+        "caveats": [PUBLIC_SOURCES_DATA_GAPS["sector_taxonomy_labels"]],
     },
     "AlternativeDataMetadata.get_sectors_summary": {
         "category": "metadata",
@@ -412,7 +491,9 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
         "description": (
             "Get Brazilian macroeconomic or public fiscal time-series observations. "
             "Indicator values include selic, ipca, ipca_contributions, "
-            "ipca_categories, copom, pim, pmc, pms, pnad, gdp, comexstat and rreo."
+            "ipca_categories, copom, pim, pmc, pms, pnad, gdp, comexstat and "
+            "rreo. Returned units, date grains and row fields vary by indicator "
+            "and source."
         ),
         "parameters": {
             "indicator": "Macro indicator code.",
@@ -429,6 +510,7 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
             "offset": "Pagination offset.",
         },
         "relationships": ["macro_indicator_discovery", "macro_market_bridge"],
+        "caveats": [PUBLIC_SOURCES_DATA_GAPS["get_macro_indicators"]],
     },
     "AlternativeDataMacroMarkets.get_maximum_theoretical_margin": {
         "category": "market_data_reference",
@@ -447,13 +529,16 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
             "origin": "Optional origin market filter.",
             "start_date": "Start date in YYYY-MM-DD.",
             "end_date": "End date in YYYY-MM-DD.",
-            "min_margin": "Lower bound for discount_margin.",
-            "max_margin": "Upper bound for discount_margin.",
+            "min_margin": "Lower bound for discount_margin percentage value.",
+            "max_margin": "Upper bound for discount_margin percentage value.",
             "limit": "Maximum number of rows.",
             "offset": "Pagination offset.",
         },
         "relationships": ["asset_discovery", "company_trading_bridge"],
-        "caveats": [PUBLIC_SOURCES_EXCLUDED_ENDPOINTS["market-data/investor-categories"]],
+        "caveats": [
+            PUBLIC_SOURCES_DATA_GAPS["get_maximum_theoretical_margin"],
+            PUBLIC_SOURCES_EXCLUDED_ENDPOINTS["market-data/investor-categories"],
+        ],
     },
     "AlternativeDataMacroMarkets.get_dpmfi": {
         "category": "macro",
@@ -462,7 +547,9 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
         "client": "AlternativeDataMacroMarkets",
         "description": (
             "Get monthly stock of DPMFi, Brazilian federal domestic public debt, "
-            "by indexer such as LTN, LFT, NTN-B, NTN-F and Demais."
+            "by security acronym/indexer such as LTN, LFT, NTN-B, NTN-F and "
+            "Demais. This is the official/projection/estimated stock series, "
+            "not the PAF composition projection."
         ),
         "parameters": {
             "start_date": "Reference month start in YYYY-MM.",
@@ -504,7 +591,9 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
         "description": (
             "Get members of a company's governance body. body can be board, "
             "executive or committee; committee filters a specific committee when "
-            "body='committee'."
+            "body='committee'. For Brazilian filings, body='board' can include "
+            "Conselho Fiscal rows; filter governance_body/role for Conselho de "
+            "Administracao when answering board-of-directors questions."
         ),
         "parameters": {
             "company_id": PUBLIC_SOURCES_CONVENTIONS["company_id"],
@@ -516,6 +605,7 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
             "offset": "Pagination offset.",
         },
         "relationships": ["company_resolution", "company_trading_bridge"],
+        "caveats": [PUBLIC_SOURCES_DATA_GAPS["get_company_board"]],
     },
     "AlternativeDataCompanies.get_governance_summary": {
         "category": "companies",
@@ -701,14 +791,18 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
         "description": (
             "Get company financial-statement line items from CVM filings. "
             "statement can be income_statement, balance_sheet or cash_flow; "
-            "use account_code to retrieve a specific account."
+            "use account_code to retrieve a specific account. Omit company_id "
+            "only for universe-level screens or rankings."
         ),
         "parameters": {
-            "company_id": PUBLIC_SOURCES_CONVENTIONS["company_id"],
+            "company_id": (
+                PUBLIC_SOURCES_CONVENTIONS["company_id"]
+                + " Omit only for universe-level screens or rankings."
+            ),
             "statement": "Statement type or alias, for example income_statement, balance_sheet or cash_flow.",
             "quarter": "Brazilian quarter code such as 1T24 or 4T24.",
             "reference_date": "Reference date in YYYY-MM-DD.",
-            "statement_type": "Optional filing type filter such as DFP or ITR.",
+            "statement_type": "Optional presentation/filter such as consolidated or individual when supported.",
             "account_code": "Optional account code filter.",
             "limit": "Maximum number of line items.",
             "offset": "Pagination offset.",
@@ -718,6 +812,7 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
             "company_trading_bridge", "sector_market_peer_bridge",
             "macro_market_bridge",
         ],
+        "caveats": [PUBLIC_SOURCES_DATA_GAPS["get_financial_statements"]],
     },
     "AlternativeDataCompanies.get_financial_notes": {
         "category": "companies",
@@ -856,7 +951,8 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
         "description": (
             "Get aggregate exposures for a fund or ETF by dimension. "
             "exposure_type can be all, asset_class, issuer, sector, indexer, "
-            "maturity or country."
+            "maturity or country. Use holdings for constituent-level exposure "
+            "when a dimension is sparse or source-dependent."
         ),
         "parameters": {
             "fund_id": PUBLIC_SOURCES_CONVENTIONS["fund_id"],
@@ -867,6 +963,7 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
             "fund_company_bridge", "sector_peer_set",
             "fund_market_exposure_bridge", "sector_market_peer_bridge",
         ],
+        "caveats": [PUBLIC_SOURCES_DATA_GAPS["get_fund_exposures"]],
     },
     "AlternativeDataFunds.get_history": {
         "category": "funds",
@@ -896,7 +993,8 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
         "client": "AlternativeDataFunds",
         "description": (
             "Get recursive look-through exposure for a fund or ETF. Use this to "
-            "expand nested fund holdings into underlying assets when available."
+            "expand nested fund holdings into underlying assets when available; "
+            "for direct-equity ETFs, holdings and exposures can be more useful."
         ),
         "parameters": {
             "fund_id": PUBLIC_SOURCES_CONVENTIONS["fund_id"],
@@ -904,6 +1002,7 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
             "limit": "Maximum number of look-through rows.",
         },
         "relationships": ["fund_company_bridge", "fund_market_exposure_bridge"],
+        "caveats": [PUBLIC_SOURCES_DATA_GAPS["get_fund_lookthrough"]],
     },
     "AlternativeDataFunds.get_manager_aggregate_holdings": {
         "category": "funds",
@@ -948,7 +1047,10 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
             "company_resolution", "ownership_fallback",
             "ownership_liquidity_bridge",
         ],
-        "caveats": [PUBLIC_SOURCES_DATA_GAPS["get_top_shareholders"]],
+        "caveats": [
+            PUBLIC_SOURCES_DATA_GAPS["get_top_shareholders"],
+            PUBLIC_SOURCES_DATA_GAPS["ownership_reporting_dates"],
+        ],
     },
     "AlternativeDataOwnership.get_ownership_current": {
         "category": "ownership",
@@ -964,6 +1066,7 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
             "company_resolution", "ownership_fallback",
             "ownership_liquidity_bridge",
         ],
+        "caveats": [PUBLIC_SOURCES_DATA_GAPS["ownership_reporting_dates"]],
     },
     "AlternativeDataOwnership.get_ownership_history": {
         "category": "ownership",
@@ -987,7 +1090,10 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
             "company_resolution", "ownership_fallback",
             "ownership_liquidity_bridge",
         ],
-        "caveats": [PUBLIC_SOURCES_DATA_GAPS["get_ownership_history"]],
+        "caveats": [
+            PUBLIC_SOURCES_DATA_GAPS["get_ownership_history"],
+            PUBLIC_SOURCES_DATA_GAPS["ownership_reporting_dates"],
+        ],
     },
     "AlternativeDataOwnership.get_ownership_change_events": {
         "category": "ownership",
@@ -1010,6 +1116,7 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
             "company_resolution", "ownership_fallback", "document_summary",
             "ownership_liquidity_bridge", "document_market_event_bridge",
         ],
+        "caveats": [PUBLIC_SOURCES_DATA_GAPS["ownership_reporting_dates"]],
     },
     "AlternativeDataOwnership.get_ownership_official_notices": {
         "category": "ownership",
@@ -1033,7 +1140,10 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
             "company_resolution", "ownership_fallback", "document_summary",
             "ownership_liquidity_bridge", "document_market_event_bridge",
         ],
-        "caveats": [PUBLIC_SOURCES_DATA_GAPS["get_ownership_official_notices"]],
+        "caveats": [
+            PUBLIC_SOURCES_DATA_GAPS["get_ownership_official_notices"],
+            PUBLIC_SOURCES_DATA_GAPS["ownership_reporting_dates"],
+        ],
     },
     "AlternativeDataOwnership.get_notice_summary": {
         "category": "ownership",
@@ -1065,6 +1175,7 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
             "company_resolution", "ownership_fallback",
             "ownership_liquidity_bridge",
         ],
+        "caveats": [PUBLIC_SOURCES_DATA_GAPS["ownership_reporting_dates"]],
     },
     "AlternativeDataOwnership.get_ownership_free_float": {
         "category": "ownership",
@@ -1083,6 +1194,7 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
             "company_resolution", "ownership_fallback",
             "ownership_liquidity_bridge",
         ],
+        "caveats": [PUBLIC_SOURCES_DATA_GAPS["ownership_reporting_dates"]],
     },
     "AlternativeDataOwnership.get_shareholder_holdings": {
         "category": "ownership",

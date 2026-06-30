@@ -1,3 +1,19 @@
+4.3.2 (2026-06-30)
+==================
+
+Changed
+
+- Added technical caveats for macro indicators, DPMFi snapshot discovery,
+  B3 taxonomy label matching and Brazilian governance body responses where
+  ``body='board'`` can include Conselho Fiscal rows.
+- Clarified universe-level financial-statement rankings without ``company_id``,
+  ``statement_type`` values, latest-quarter fallback, and fund exposure versus
+  look-through behavior for direct-equity ETFs.
+- Clarified ownership/free-float reporting dates, duplicate holder/category
+  interpretation and B3 maximum theoretical margin ``discount_margin`` as a
+  haircut percentage reference value rather than a live quote or credit value.
+
+
 4.3.1 (2026-06-30)
 ==================
 
