@@ -64,6 +64,8 @@ class AlternativeDataMacroMarkets:
         country: Optional[str] = None,
         source: Optional[str] = None,
         type: Optional[str] = None,
+        aggregate: Optional[str] = None,
+        group_by: Optional[str] = None,
         limit: int = 100,
         offset: int = 0,
     ) -> dict:
@@ -116,6 +118,15 @@ class AlternativeDataMacroMarkets:
         type: str
             Variation type for PIM/PMC/PMS/GDP: 'yoy' or 'mom'.
             Field is not required.
+        aggregate: str
+            Optional compact aggregation mode. RREO supports 'timeline' and
+            'states'. ComexStat supports 'states', 'countries', 'timeline',
+            and 'top_partners_by_state'.
+            Field is not required.
+        group_by: str
+            Optional aggregation dimension for ComexStat. Use 'state',
+            'country', or 'state_country' where supported.
+            Field is not required.
         limit: int
             Maximum number of observations to return.
             Field is not required. Default: 100.
@@ -134,6 +145,8 @@ class AlternativeDataMacroMarkets:
             "country": country,
             "source": source,
             "type": type,
+            "aggregate": aggregate,
+            "group_by": group_by,
             "limit": limit,
             "offset": offset,
         })

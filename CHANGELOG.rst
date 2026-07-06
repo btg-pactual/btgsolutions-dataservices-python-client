@@ -1,3 +1,36 @@
+4.4.0 (2026-07-03)
+==================
+
+Added
+
+- Added ``AlternativeDataCompanies.list_companies`` and
+  ``AlternativeDataMetadata.list_companies`` for lightweight company discovery
+  through ``/api/v1/public-sources/companies/list``.
+- Added compact ComexStat and RREO support to
+  ``AlternativeDataMacroMarkets.get_macro_indicators`` through ``aggregate``
+  and ``group_by`` parameters.
+- Added compact dashboard parameters for Alternative Data company endpoints:
+  governance compensation ``reference_date``, ``governance_body``,
+  ``summary`` and ``latest_only``; financial statements ``statements``,
+  ``account_codes``, ``summary``, ``metrics`` and ``include_raw``; financial
+  notes ``sections``, ``summary``, ``include_raw``, ``only_with_data`` and
+  ``latest_only``; and disclosures ``transaction_types``, ``group_by``,
+  ``include_raw`` and ``operation_type``.
+- Added ETF and fund payload controls: ``include_metrics`` on ETF listing and
+  ``summary``/``include_raw`` on fund holdings.
+
+Changed
+
+- Updated the Public Sources technical catalog, docstrings and README examples
+  to document compact macro, disclosure, financial-statement, financial-note,
+  ETF and holdings workflows.
+- Clarified B3 asset institutional-holder behavior when the API resolves a B3
+  ticker to a listed share-class ISIN fallback.
+- Documented that financial-statement summary metrics use direct CVM account
+  lines and intentionally skip EBITDA because it is not a standardized CVM
+  account line.
+
+
 4.3.2 (2026-06-30)
 ==================
 

@@ -138,13 +138,15 @@ PUBLIC_SOURCES_DATA_GAPS: dict[str, str] = {
         "and free-float endpoints for Brazilian ownership context."
     ),
     "get_asset_institutional_holders": (
-        "Institutional-holder coverage can be sparse for B3-listed assets and "
-        "can return zero rows for tickers that still have fund-holder or ETF "
-        "holder coverage. This endpoint reads the precomputed asset-holder "
-        "layer and ownership_snapshot fund_holder fallback; it does not run the "
-        "live fund-portfolio/ETF holding lookup used by get_asset_fund_holders. "
-        "Use get_asset_fund_holders for Brazilian assets when this endpoint is "
-        "empty."
+        "Institutional-holder coverage comes from the precomputed asset-holder "
+        "layer. For B3 tickers, the service can resolve the ticker to the "
+        "listed share-class ISIN from the B3 sector-classification staging "
+        "data when a direct b3_ticker snapshot is not present. Responses can "
+        "include lookup_identifier, lookup_identifier_type and lookup_note when "
+        "that ticker-to-ISIN fallback was used. This endpoint still does not run "
+        "the live fund-portfolio/ETF holding lookup used by "
+        "get_asset_fund_holders; use get_asset_fund_holders when this endpoint "
+        "is empty or when ETF/fund-holder coverage is needed."
     ),
     "get_disclosure_documents_repurchase": (
         "Share-repurchase disclosure coverage can be thin for many companies. "
@@ -373,7 +375,8 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
         "description": (
             "List ETFs available in the public-sources ETF registry. Use this "
             "for ETF discovery because ETFs are not returned by listed-company "
-            "search endpoints."
+            "search endpoints. Use include_metrics=False for lightweight "
+            "autocomplete/search responses."
         ),
         "parameters": {
             "query": "Free-text filter over ticker, fund name, CNPJ or issuer.",
@@ -381,6 +384,7 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
             "source": "Holdings source used for reference date and totals: official, approximate or index.",
             "sort_by": "Sort mode: name, ticker, positions_count_desc, total_value_desc or total_value_asc.",
             "min_positions": "Minimum number of positions required.",
+            "include_metrics": "When false, skip latest holdings/AUM/NAV/holder metric enrichment.",
             "limit": "Maximum number of ETFs.",
             "offset": "Pagination offset.",
         },
@@ -506,6 +510,14 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
             "country": "Partner country filter for Comexstat.",
             "source": "Optional data-source filter.",
             "type": "Subseries/type filter for PIM, PMC, PMS or GDP, such as industria_geral.",
+            "aggregate": (
+                "Optional compact aggregation mode. RREO supports timeline and states; "
+                "Comexstat supports states, countries, timeline and top_partners_by_state."
+            ),
+            "group_by": (
+                "Optional Comexstat aggregation dimension for compact outputs, such as "
+                "state, country or state_country."
+            ),
             "limit": "Maximum number of observations.",
             "offset": "Pagination offset.",
         },
@@ -671,11 +683,16 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
         "client": "AlternativeDataCompanies",
         "description": (
             "Get governance compensation or remuneration records for a company, "
-            "optionally filtered by fiscal_year."
+            "optionally filtered by fiscal_year, reference_date or governance_body. "
+            "Use summary=True for one compact record per fiscal year and governance body."
         ),
         "parameters": {
             "company_id": PUBLIC_SOURCES_CONVENTIONS["company_id"],
             "fiscal_year": "Optional four-digit fiscal year.",
+            "reference_date": "Optional exact filing/reference date (YYYY-MM-DD).",
+            "governance_body": "Optional governance body filter.",
+            "summary": "When true, returns compact chart-ready records.",
+            "latest_only": "When true, restricts records to the latest matching reference date.",
             "limit": "Maximum number of records.",
             "offset": "Pagination offset.",
         },
@@ -791,8 +808,11 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
         "description": (
             "Get company financial-statement line items from CVM filings. "
             "statement can be income_statement, balance_sheet or cash_flow; "
-            "use account_code to retrieve a specific account. Omit company_id "
-            "only for universe-level screens or rankings."
+            "use account_code/account_codes to retrieve specific accounts. "
+            "The optional summary mode returns direct CVM account-line metrics; "
+            "EBITDA is intentionally not returned because it is not a "
+            "standardized CVM account line. Omit company_id only for "
+            "universe-level screens or rankings."
         ),
         "parameters": {
             "company_id": (
@@ -800,10 +820,15 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
                 + " Omit only for universe-level screens or rankings."
             ),
             "statement": "Statement type or alias, for example income_statement, balance_sheet or cash_flow.",
+            "statements": "Optional comma-separated list of statement types/aliases to query in one call.",
             "quarter": "Brazilian quarter code such as 1T24 or 4T24.",
             "reference_date": "Reference date in YYYY-MM-DD.",
             "statement_type": "Optional presentation/filter such as consolidated or individual when supported.",
             "account_code": "Optional account code filter.",
+            "account_codes": "Optional comma-separated list of CVM account code filters.",
+            "summary": "When true, include direct-account summary metrics.",
+            "metrics": "Optional comma-separated summary metrics. ebitda is ignored because it is not a direct CVM account-line metric.",
+            "include_raw": "When false, suppress raw line items and return only metadata plus summary.",
             "limit": "Maximum number of line items.",
             "offset": "Pagination offset.",
         },
@@ -822,11 +847,17 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
         "description": (
             "Get structured explanatory notes, notas explicativas, from CVM "
             "DFP/ITR filings. Use this for note text and parsed note details, "
-            "not accounting line-item tables."
+            "not accounting line-item tables. Use sections, summary and "
+            "include_raw=False to reduce dashboard payloads."
         ),
         "parameters": {
             "company_id": PUBLIC_SOURCES_CONVENTIONS["company_id"],
             "quarter": "Brazilian quarter code such as 1T24 or 4T24.",
+            "sections": "Optional comma-separated note sections: geographic_segments, fx_exposure, supplier_concentration.",
+            "summary": "When true, include compact counts by selected note section.",
+            "include_raw": "When false, suppress raw note documents and return only metadata plus summary.",
+            "only_with_data": "When true, return only periods where at least one selected section has parsed rows.",
+            "latest_only": "When true and quarter is omitted, restrict results to the latest matching quarter.",
             "limit": "Maximum number of notes.",
             "offset": "Pagination offset.",
         },
@@ -844,7 +875,9 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
             "Get CVM disclosure documents for Brazilian companies. "
             "document_type='repurchase' returns share-buyback documents; "
             "document_type='insiders' returns Brazilian insider-trading "
-            "disclosures; the upstream alias 'insider' is also accepted."
+            "disclosures; the upstream alias 'insider' is also accepted. "
+            "Use group_by to return compact aggregations such as month, "
+            "participant_group and side without downloading raw documents."
         ),
         "parameters": {
             "company_id": PUBLIC_SOURCES_CONVENTIONS["company_id"],
@@ -856,7 +889,11 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
             "end_date": "End date in YYYY-MM-DD.",
             "transaction": "Optional transaction description filter.",
             "transaction_type": "Optional transaction type filter.",
+            "transaction_types": "Optional comma-separated list of normalized transaction type filters.",
             "participant_group": "Optional participant group filter.",
+            "group_by": "Optional comma-separated aggregation dimensions: month, participant_group, side, asset, company, transaction_type, security, characteristics.",
+            "include_raw": "When false, suppress raw disclosure documents and return only metadata plus aggregations.",
+            "operation_type": "Optional operation class; spot narrows insiders to cash buy/sell operations.",
             "limit": "Maximum number of documents.",
             "offset": "Pagination offset.",
         },
@@ -931,13 +968,16 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
         "client": "AlternativeDataFunds",
         "description": (
             "Get a fund or ETF portfolio holdings/positions for a reference date. "
-            "Use this for constituent assets and weights or values, not NAV history."
+            "Use this for constituent assets and weights or values, not NAV history. "
+            "Use summary=True and include_raw=False for a compact payload."
         ),
         "parameters": {
             "fund_id": PUBLIC_SOURCES_CONVENTIONS["fund_id"],
             "reference_date": "Reference date in YYYY-MM-DD; omitted means latest snapshot.",
             "asset_class": "Optional asset class filter.",
             "source": "Holdings source: official, approximate or index.",
+            "summary": "When true, include compact holdings totals and asset-class buckets.",
+            "include_raw": "When false, suppress raw holding rows from holdings.",
             "limit": "Maximum number of holdings.",
             "offset": "Pagination offset.",
         },
@@ -1223,7 +1263,8 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
         "description": (
             "Get institutional holders of an asset from the precomputed "
             "asset-holder layer. identifier defaults to a B3 ticker when "
-            "identifier_type='b3_ticker'."
+            "identifier_type='b3_ticker'; B3 tickers may be resolved to their "
+            "share-class ISIN when no direct ticker snapshot exists."
         ),
         "parameters": {
             "identifier": PUBLIC_SOURCES_CONVENTIONS["asset_identifier"],

@@ -59,6 +59,7 @@ class AlternativeDataFunds:
         source: str = "official",
         sort_by: str = "name",
         min_positions: int = 1,
+        include_metrics: bool = True,
         limit: int = 100,
         offset: int = 0,
     ) -> dict:
@@ -86,6 +87,10 @@ class AlternativeDataFunds:
         min_positions: int
             Minimum number of positions required for an ETF to be returned.
             Field is not required. Default: 1.
+        include_metrics: bool
+            When false, returns ETF identity fields without computing latest
+            positions, AUM/NAV or holder metrics. Use this for autocomplete.
+            Field is not required. Default: True.
         limit: int
             Maximum number of ETFs to return.
             Field is not required. Default: 100.
@@ -99,6 +104,7 @@ class AlternativeDataFunds:
             "source": source,
             "sort_by": sort_by,
             "min_positions": min_positions,
+            "include_metrics": include_metrics,
             "limit": limit,
             "offset": offset,
         })
@@ -109,6 +115,8 @@ class AlternativeDataFunds:
         reference_date: Optional[str] = None,
         asset_class: Optional[str] = None,
         source: str = "official",
+        summary: Optional[bool] = None,
+        include_raw: Optional[bool] = None,
         limit: int = 200,
         offset: int = 0,
     ) -> dict:
@@ -133,6 +141,13 @@ class AlternativeDataFunds:
         source: str
             Data source: 'official', 'approximate', or 'index'.
             Field is not required. Default: 'official'.
+        summary: bool
+            When true, includes compact positions_count, total_value,
+            total_weight and asset-class buckets.
+            Field is not required. Default: False.
+        include_raw: bool
+            When false, suppresses raw holding rows from ``holdings``.
+            Field is not required. Default: True.
         limit: int
             Maximum number of holdings to return (max 5000).
             Field is not required. Default: 200.
@@ -145,6 +160,8 @@ class AlternativeDataFunds:
             "reference_date": reference_date,
             "asset_class": asset_class,
             "source": source,
+            "summary": summary,
+            "include_raw": include_raw,
             "limit": limit,
             "offset": offset,
         })

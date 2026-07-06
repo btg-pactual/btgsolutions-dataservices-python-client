@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Sequence, Union
 import requests
 from ..exceptions import BadResponse
 from ..config import url_api_v1
@@ -43,6 +43,12 @@ class AlternativeDataCompanies:
         if response.status_code != 200:
             self._raise_error(response)
         return response.json()
+
+    @staticmethod
+    def _csv_param(value: Optional[Union[str, Sequence[str]]]) -> Optional[str]:
+        if value is None or isinstance(value, str):
+            return value
+        return ",".join(str(item) for item in value if item is not None and str(item) != "")
 
     @staticmethod
     def _raise_error(response):
@@ -258,6 +264,10 @@ class AlternativeDataCompanies:
         self,
         company_id: str,
         fiscal_year: Optional[str] = None,
+        reference_date: Optional[str] = None,
+        governance_body: Optional[str] = None,
+        summary: bool = False,
+        latest_only: bool = False,
         limit: int = 100,
         offset: int = 0,
     ) -> dict:
@@ -272,6 +282,18 @@ class AlternativeDataCompanies:
         fiscal_year: str
             Four-digit fiscal year filter.
             Field is not required. Example: '2024'.
+        reference_date: str
+            Exact filing/reference date filter (YYYY-MM-DD).
+            Field is not required.
+        governance_body: str
+            Governance body filter. Example: 'Conselho de Administração'.
+            Field is not required.
+        summary: bool
+            When true, returns one compact record per fiscal year and governance body.
+            Field is not required. Default: False.
+        latest_only: bool
+            When true, restricts records to the latest matching reference date.
+            Field is not required. Default: False.
         limit: int
             Maximum number of results to return.
             Field is not required. Default: 100.
@@ -282,6 +304,10 @@ class AlternativeDataCompanies:
         return self._get("companies/governance-compensation", {
             "company_id": company_id,
             "fiscal_year": fiscal_year,
+            "reference_date": reference_date,
+            "governance_body": governance_body,
+            "summary": summary,
+            "latest_only": latest_only,
             "limit": limit,
             "offset": offset,
         })
@@ -484,10 +510,15 @@ class AlternativeDataCompanies:
         self,
         company_id: Optional[str] = None,
         statement: str = "income_statement",
+        statements: Optional[Union[str, Sequence[str]]] = None,
         quarter: Optional[str] = None,
         reference_date: Optional[str] = None,
         statement_type: Optional[str] = None,
         account_code: Optional[str] = None,
+        account_codes: Optional[Union[str, Sequence[str]]] = None,
+        summary: Optional[bool] = None,
+        metrics: Optional[Union[str, Sequence[str]]] = None,
+        include_raw: Optional[bool] = None,
         limit: int = 100,
         offset: int = 0,
     ) -> dict:
@@ -509,6 +540,11 @@ class AlternativeDataCompanies:
         statement: str
             Statement type (e.g. 'income_statement', 'balance_sheet', 'cash_flow').
             Field is not required. Default: 'income_statement'.
+        statements: str | list[str]
+            Optional comma-separated list (or Python sequence) of statement types
+            to query in a single call. When omitted, ``statement`` preserves the
+            historical single-statement behavior.
+            Field is not required.
         quarter: str
             Brazilian quarter code filter (e.g. '1T24' or '4T24').
             Field is not required.
@@ -523,6 +559,26 @@ class AlternativeDataCompanies:
         account_code: str
             Specific account code filter.
             Field is not required.
+        account_codes: str | list[str]
+            Optional comma-separated list (or Python sequence) of account codes.
+            This is useful for dashboard summaries that need only a few CVM
+            account lines instead of the full statement.
+            Field is not required.
+        summary: bool
+            When true, include a ``summary`` block with direct CVM account-line
+            metrics such as revenue, EBIT, net income, assets, equity and
+            operating cash flow. EBITDA is not returned because it is not a
+            standardized direct CVM account line.
+            Field is not required. Default: False.
+        metrics: str | list[str]
+            Optional summary metrics to return, for example
+            ``['revenue', 'ebit', 'net_income']``. ``ebitda`` is not returned
+            because it is not a standardized direct CVM account line.
+            Field is not required.
+        include_raw: bool
+            When false and ``summary=True``, suppress raw line items and return
+            only metadata plus the summary block.
+            Field is not required. Default: True.
         limit: int
             Maximum number of results to return.
             Field is not required. Default: 100.
@@ -533,10 +589,15 @@ class AlternativeDataCompanies:
         return self._get("companies/financial-statements", {
             "company_id": company_id,
             "statement": statement,
+            "statements": self._csv_param(statements),
             "quarter": quarter,
             "reference_date": reference_date,
             "statement_type": statement_type,
             "account_code": account_code,
+            "account_codes": self._csv_param(account_codes),
+            "summary": summary,
+            "metrics": self._csv_param(metrics),
+            "include_raw": include_raw,
             "limit": limit,
             "offset": offset,
         })
@@ -545,6 +606,11 @@ class AlternativeDataCompanies:
         self,
         company_id: str,
         quarter: Optional[str] = None,
+        sections: Optional[Union[str, Sequence[str]]] = None,
+        summary: Optional[bool] = None,
+        include_raw: Optional[bool] = None,
+        only_with_data: Optional[bool] = None,
+        latest_only: Optional[bool] = None,
         limit: int = 10,
         offset: int = 0,
     ) -> dict:
@@ -561,6 +627,24 @@ class AlternativeDataCompanies:
         quarter: str
             Brazilian quarter code filter (e.g. '1T24' or '4T24').
             Field is not required.
+        sections: str | list[str]
+            Optional note sections to return. Supported values are
+            geographic_segments, fx_exposure and supplier_concentration.
+            Field is not required.
+        summary: bool
+            When true, includes compact per-document counts by selected section.
+            Field is not required. Default: False.
+        include_raw: bool
+            When false, suppresses raw note documents from ``results``.
+            Field is not required. Default: True.
+        only_with_data: bool
+            When true, returns only periods where at least one selected section
+            has parsed rows.
+            Field is not required. Default: False.
+        latest_only: bool
+            When true and quarter is omitted, restricts the response to the
+            latest matching quarter.
+            Field is not required. Default: False.
         limit: int
             Maximum number of results to return.
             Field is not required. Default: 10.
@@ -571,6 +655,11 @@ class AlternativeDataCompanies:
         return self._get("companies/financial-notes", {
             "company_id": company_id,
             "quarter": quarter,
+            "sections": self._csv_param(sections),
+            "summary": summary,
+            "include_raw": include_raw,
+            "only_with_data": only_with_data,
+            "latest_only": latest_only,
             "limit": limit,
             "offset": offset,
         })
@@ -586,7 +675,11 @@ class AlternativeDataCompanies:
         end_date: Optional[str] = None,
         transaction: Optional[str] = None,
         transaction_type: Optional[str] = None,
+        transaction_types: Optional[Union[str, Sequence[str]]] = None,
         participant_group: Optional[str] = None,
+        group_by: Optional[Union[str, Sequence[str]]] = None,
+        include_raw: Optional[bool] = None,
+        operation_type: Optional[str] = None,
         limit: int = 100,
         offset: int = 0,
     ) -> dict:
@@ -627,8 +720,26 @@ class AlternativeDataCompanies:
         transaction_type: str
             Transaction type filter.
             Field is not required.
+        transaction_types: str | list[str]
+            Optional comma-separated list (or Python sequence) of normalized
+            transaction types.
+            Field is not required.
         participant_group: str
             Participant group filter.
+            Field is not required.
+        group_by: str | list[str]
+            Optional aggregation dimensions. Supported values include month,
+            participant_group, side, asset, company, transaction_type, security
+            and characteristics. For dashboard insider charts, use
+            ``['month', 'participant_group', 'side']``.
+            Field is not required.
+        include_raw: bool
+            When false, suppress raw disclosure documents and return only
+            metadata plus aggregations.
+            Field is not required. Default: True.
+        operation_type: str
+            Optional operation class. ``spot`` narrows insider aggregations to
+            cash buy/sell operations and excludes transfers/conversions.
             Field is not required.
         limit: int
             Maximum number of results to return.
@@ -647,7 +758,11 @@ class AlternativeDataCompanies:
             "end_date": end_date,
             "transaction": transaction,
             "transaction_type": transaction_type,
+            "transaction_types": self._csv_param(transaction_types),
             "participant_group": participant_group,
+            "group_by": self._csv_param(group_by),
+            "include_raw": include_raw,
+            "operation_type": operation_type,
             "limit": limit,
             "offset": offset,
         })

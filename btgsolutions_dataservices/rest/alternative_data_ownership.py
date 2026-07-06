@@ -373,9 +373,10 @@ class AlternativeDataOwnership:
     ) -> dict:
         """
         Institutional holders of a specific asset from the precomputed
-        asset-holder layer. Coverage can be sparse for B3 tickers. This
-        endpoint does not run the live fund-portfolio/ETF holding lookup used
-        by get_fund_holders(); when this endpoint returns no holders,
+        asset-holder layer. For B3 tickers, the service can resolve the ticker
+        to the listed share-class ISIN when no direct ticker snapshot exists.
+        This endpoint does not run the live fund-portfolio/ETF holding lookup
+        used by get_fund_holders(); when this endpoint returns no holders,
         get_fund_holders() is often the richer inverse relationship for
         Brazilian assets because it uses fund portfolio and ETF holding
         snapshots.

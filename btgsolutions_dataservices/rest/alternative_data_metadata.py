@@ -183,6 +183,7 @@ class AlternativeDataMetadata:
         source: str = "official",
         sort_by: str = "name",
         min_positions: int = 1,
+        include_metrics: bool = True,
         limit: int = 100,
         offset: int = 0,
     ) -> dict:
@@ -210,6 +211,10 @@ class AlternativeDataMetadata:
         min_positions: int
             Minimum number of positions required for an ETF to be returned.
             Field is not required. Default: 1.
+        include_metrics: bool
+            When false, returns ETF identity fields without computing latest
+            positions, AUM/NAV or holder metrics. Use this for autocomplete.
+            Field is not required. Default: True.
         limit: int
             Maximum number of ETFs to return.
             Field is not required. Default: 100.
@@ -223,6 +228,7 @@ class AlternativeDataMetadata:
             "source": source,
             "sort_by": sort_by,
             "min_positions": min_positions,
+            "include_metrics": include_metrics,
             "limit": limit,
             "offset": offset,
         })
