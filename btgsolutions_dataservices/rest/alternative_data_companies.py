@@ -478,7 +478,14 @@ class AlternativeDataCompanies:
         limit: int = 100,
     ) -> dict:
         """
-        Board appointment and resignation events.
+        Board and executive change events.
+
+        Brazilian listed-company events can include FRE-derived ``elected``,
+        ``replaced`` and ``resigned`` rows. Inspect ``event_date`` as the
+        effective timeline date when present; ``reference_date`` and
+        ``previous_reference_date`` describe the source snapshots used to
+        detect the change. Brazilian rows derived from FRE snapshots use
+        ``source='fre'`` unless a more specific source is stored.
 
         Parameters
         ----------------
@@ -492,7 +499,8 @@ class AlternativeDataCompanies:
             End date in YYYY-MM-DD format.
             Field is not required.
         event: str
-            Event type filter: 'appointed' or 'resigned'.
+            Event type filter, for example 'elected', 'replaced',
+            'resigned' or 'appointed' depending on jurisdiction.
             Field is not required.
         limit: int
             Maximum number of results to return.

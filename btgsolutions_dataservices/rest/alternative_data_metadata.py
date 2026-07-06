@@ -206,7 +206,10 @@ class AlternativeDataMetadata:
             Field is not required. Default: 'official'.
         sort_by: str
             Sort mode: 'name', 'ticker', 'positions_count_desc',
-            'total_value_desc', or 'total_value_asc'.
+            'total_value_desc', 'total_value_asc', 'fund_nav_desc',
+            'fund_nav_asc', 'nav_desc', 'nav_asc',
+            'shareholders_count_desc', 'shareholders_count_asc',
+            'holders_desc', or 'holders_asc'.
             Field is not required. Default: 'name'.
         min_positions: int
             Minimum number of positions required for an ETF to be returned.

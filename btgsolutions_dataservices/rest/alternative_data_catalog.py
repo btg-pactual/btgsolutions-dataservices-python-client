@@ -57,6 +57,17 @@ PUBLIC_SOURCES_DATA_GAPS: dict[str, str] = {
         "can include broad aggregates such as Outros Comites; do not infer "
         "granular committee names unless they are present in returned fields."
     ),
+    "get_board_changes": (
+        "Brazilian board-change rows can be materialized from FRE snapshot "
+        "comparisons. Use event_date as the timeline date when present; "
+        "reference_date and previous_reference_date describe the snapshots "
+        "used to detect the change. BR events commonly include elected, "
+        "replaced and resigned. A replaced row is a join event for the new "
+        "member/seat and suppresses a duplicate FRE-inferred elected row for "
+        "that same person, body, role and nearby date. Brazilian rows derived "
+        "from FRE snapshots use source='fre' unless a more specific source is "
+        "stored with the event."
+    ),
     "get_financial_statements": (
         "company_id may be omitted only for universe-level screens or rankings. "
         "There is no dedicated latest-quarter discovery field; when a requested "
@@ -382,7 +393,7 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
             "query": "Free-text filter over ticker, fund name, CNPJ or issuer.",
             "issuer": "Optional issuer key/name filter.",
             "source": "Holdings source used for reference date and totals: official, approximate or index.",
-            "sort_by": "Sort mode: name, ticker, positions_count_desc, total_value_desc or total_value_asc.",
+            "sort_by": "Sort mode: name, ticker, positions_count_desc, total_value_desc, total_value_asc, fund_nav_desc, fund_nav_asc, nav_desc, nav_asc, shareholders_count_desc, shareholders_count_asc, holders_desc or holders_asc.",
             "min_positions": "Minimum number of positions required.",
             "include_metrics": "When false, skip latest holdings/AUM/NAV/holder metric enrichment.",
             "limit": "Maximum number of ETFs.",
@@ -640,7 +651,8 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
         "description": (
             "Get historical governance snapshots for a company over a date "
             "range. Use this for composition changes over time; use "
-            "get_board_changes for event-style appointment and departure changes."
+            "get_board_changes for event-style election, replacement and "
+            "departure changes."
         ),
         "parameters": {
             "company_id": PUBLIC_SOURCES_CONVENTIONS["company_id"],
@@ -788,17 +800,18 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
         "client": "AlternativeDataCompanies",
         "description": (
             "Get board or executive change events for a company, such as "
-            "appointments and departures. Use this for event timelines; use "
-            "get_board for composition at a date."
+            "elections, replacements and departures. Use this for event "
+            "timelines; use get_board for composition at a date."
         ),
         "parameters": {
             "company_id": PUBLIC_SOURCES_CONVENTIONS["company_id"],
-            "start_date": "Start date in YYYY-MM-DD.",
-            "end_date": "End date in YYYY-MM-DD.",
-            "event": "Optional event type filter.",
+            "start_date": "Start date in YYYY-MM-DD; filters event_date when present, otherwise reference_date.",
+            "end_date": "End date in YYYY-MM-DD; filters event_date when present, otherwise reference_date.",
+            "event": "Optional event type filter, for example elected, replaced, resigned or appointed depending on jurisdiction.",
             "limit": "Maximum number of events.",
         },
         "relationships": ["company_resolution", "company_trading_bridge"],
+        "caveats": [PUBLIC_SOURCES_DATA_GAPS["get_board_changes"]],
     },
     "AlternativeDataCompanies.get_financial_statements": {
         "category": "companies",
@@ -969,7 +982,11 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
         "description": (
             "Get a fund or ETF portfolio holdings/positions for a reference date. "
             "Use this for constituent assets and weights or values, not NAV history. "
-            "Use summary=True and include_raw=False for a compact payload."
+            "Use summary=True and include_raw=False for a compact payload. "
+            "For CVM/CDA rows without same-day daily NAV, position_weight may be "
+            "computed from the latest prior daily report within seven days; "
+            "company_nav_reference_date and company_nav_source identify that "
+            "NAV source when present."
         ),
         "parameters": {
             "fund_id": PUBLIC_SOURCES_CONVENTIONS["fund_id"],
@@ -1011,9 +1028,10 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
         "method": "GET",
         "client": "AlternativeDataFunds",
         "description": (
-            "Get a fund's NAV/AUM or portfolio-value history over time. Mutual "
-            "funds return net_worth, quota_value and shareholders when available; "
-            "ETFs can return total_value and positions_count instead."
+            "Get a fund's daily NAV/AUM, quota and holder-count history over "
+            "time when CVM daily reports are available. If no daily report "
+            "exists for the fund, the endpoint falls back to holdings-derived "
+            "portfolio total_value and positions_count."
         ),
         "parameters": {
             "fund_id": PUBLIC_SOURCES_CONVENTIONS["fund_id"],
@@ -1023,7 +1041,7 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
         },
         "relationships": ["fund_company_bridge", "fund_market_exposure_bridge"],
         "caveats": [
-            "ETF history can use portfolio total_value because ETFs do not have the same daily CVM NAV filing schema as mutual funds.",
+            "Inspect returned columns before comparing series: daily-report rows include net_assets_value, quota_value and shareholders_count, while holdings fallback rows only expose portfolio total_value and positions_count.",
         ],
     },
     "AlternativeDataFunds.get_lookthrough": {
@@ -1306,6 +1324,11 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
             "start_date": "Required start date in YYYY-MM-DD.",
             "end_date": "Required end date in YYYY-MM-DD.",
             "asset": "Optional asset ticker filter.",
+            "date_field": (
+                "Optional date field used by the API to apply the start/end "
+                "range filter. Accepted values are reference_date or "
+                "delivery_date."
+            ),
             "raw_data": "If true, return upstream raw data; otherwise return a DataFrame.",
         },
         "relationships": [

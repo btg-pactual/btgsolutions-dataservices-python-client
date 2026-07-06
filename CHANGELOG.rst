@@ -1,3 +1,23 @@
+4.4.1 (2026-07-06)
+==================
+
+Added
+
+- Added ETF listing sort aliases for NAV and holder counts
+  (``fund_nav_desc``/``fund_nav_asc``, ``nav_desc``/``nav_asc``,
+  ``shareholders_count_desc``/``shareholders_count_asc`` and
+  ``holders_desc``/``holders_asc``).
+
+Changed
+
+- Clarified board-change event semantics, including BR FRE-derived
+  ``elected``/``replaced``/``resigned`` rows, ``event_date`` filtering and
+  ``source='fre'`` defaults.
+- Clarified fund-holdings weight enrichment from the latest prior CVM daily
+  report when same-day NAV is unavailable, and updated fund-history wording for
+  daily NAV, quota and holder-count fields.
+
+
 4.4.0 (2026-07-03)
 ==================
 

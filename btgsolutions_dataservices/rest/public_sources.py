@@ -100,7 +100,8 @@ class PublicSources:
             If false, returns data in a dataframe. If true, returns raw data.
             Field is not required. Default: False.
         date_field: str
-            Specific data field to filter.
+            Specific date field used to apply the period filter.
+            Accepted values: "reference_date" or "delivery_date".
             Field is not required. Example: "delivery_date". Default: None.
         """
 

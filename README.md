@@ -589,7 +589,7 @@ companies.get_governance_beneficial_ownership(company_id='AAPL')  # UK PSC / US 
 companies.get_corporate_registry(company_id='PETR4', direction='partners')
 companies.get_corporate_registry(company_id='PETR4', direction='investees')
 companies.get_insider_trades(company_id='AAPL', start_date='2024-01-01', end_date='2024-12-31')
-companies.get_board_changes(company_id='VALE3', event='appointed')
+companies.get_board_changes(company_id='VALE3', event='elected')
 companies.get_assemblies(company_id='PINE4')
 companies.get_financial_statements(company_id='PETR4', statement='income_statement', quarter='4T24')
 companies.get_financial_notes(company_id='VALE3', quarter='4T24')

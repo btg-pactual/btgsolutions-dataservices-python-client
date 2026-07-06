@@ -82,7 +82,10 @@ class AlternativeDataFunds:
             Field is not required. Default: 'official'.
         sort_by: str
             Sort mode: 'name', 'ticker', 'positions_count_desc',
-            'total_value_desc', or 'total_value_asc'.
+            'total_value_desc', 'total_value_asc', 'fund_nav_desc',
+            'fund_nav_asc', 'nav_desc', 'nav_asc',
+            'shareholders_count_desc', 'shareholders_count_asc',
+            'holders_desc', or 'holders_asc'.
             Field is not required. Default: 'name'.
         min_positions: int
             Minimum number of positions required for an ETF to be returned.
@@ -124,7 +127,10 @@ class AlternativeDataFunds:
         Holdings snapshot for a Brazilian CVM fund, ETF, or US fund.
         Use this to connect funds or ETFs to underlying assets. For the inverse
         relationship, use AlternativeDataOwnership.get_fund_holders() with a B3
-        asset ticker.
+        asset ticker. For CVM/CDA rows without same-day daily NAV, the API may
+        compute position_weight from the latest prior daily report within seven
+        days; company_nav_reference_date and company_nav_source identify that
+        NAV source when it differs from the holdings reference date.
 
         Parameters
         ----------------
@@ -209,12 +215,11 @@ class AlternativeDataFunds:
         limit: int = 12,
     ) -> dict:
         """
-        History time-series for a Brazilian CVM fund or ETF. Mutual funds
-        return NAV/quota fields; ETFs return portfolio total_value and
-        positions_count.
-        Always inspect returned column names: ETF history can differ from
-        mutual-fund NAV history because ETFs do not expose the same daily CVM
-        NAV filing schema.
+        History time-series for a Brazilian CVM fund or ETF. When CVM daily
+        reports are available, rows include net_assets_value/total_value,
+        quota_value/fund_nav and shareholders_count. If no daily report exists
+        for the fund, the endpoint falls back to holdings-derived portfolio
+        value and positions_count.
 
         Parameters
         ----------------
