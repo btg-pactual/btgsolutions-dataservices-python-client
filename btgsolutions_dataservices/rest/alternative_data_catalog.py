@@ -565,7 +565,7 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
     },
     "AlternativeDataMacroMarkets.get_dpmfi": {
         "category": "macro",
-        "path": "dpmfi",
+        "path": "dpmfi/",
         "method": "GET",
         "client": "AlternativeDataMacroMarkets",
         "description": (

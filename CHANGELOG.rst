@@ -1,3 +1,13 @@
+4.4.2 (2026-07-08)
+==================
+
+Changed
+
+- Updated the DPMFi base Public Sources path to
+  ``/api/v1/public-sources/dpmfi/`` so it can be authorized as the grouping
+  prefix for ``/api/v1/public-sources/dpmfi/composition``.
+
+
 4.4.1 (2026-07-06)
 ==================
 

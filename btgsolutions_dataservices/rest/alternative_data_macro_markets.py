@@ -263,7 +263,7 @@ class AlternativeDataMacroMarkets:
             Number of rows to skip for pagination.
             Field is not required. Default: 0.
         """
-        return self._get("dpmfi", {
+        return self._get("dpmfi/", {
             "start_date": start_date,
             "end_date": end_date,
             "status": status,
