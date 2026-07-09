@@ -1,3 +1,34 @@
+4.5.0 (2026-07-09)
+==================
+
+Added
+
+- Added SEC EDGAR company filing wrappers:
+  ``AlternativeDataCompanies.get_sec_filings`` for SEC filing metadata and
+  ``AlternativeDataCompanies.get_sec_schedule_13d_13g`` for parsed Schedule
+  13D/13G beneficial-ownership rows.
+- Added ``AlternativeDataOwnership.get_sec_13f_holdings`` for SEC 13F-HR
+  institutional investment-manager holdings by manager and/or issuer asset.
+- Added Public Sources technical catalog entries and MCP-style tool aliases for
+  ``get_sec_filings``, ``get_sec_schedule_13d_13g`` and
+  ``get_sec_13f_holdings``.
+
+Changed
+
+- Clarified company search semantics: listed-company directory search is
+  primarily by name, ticker, CNPJ or CVM code, while CIK/ISIN/LEI can be
+  accepted directly by endpoint-specific resolvers when documented.
+- Clarified US/UK governance coverage: SEC data is the primary US source for
+  filings, insider transactions and proxy beneficial ownership; UK Companies
+  House PSC coverage depends on upstream UK data loaded for the identifier.
+- Clarified ETF and fund endpoint coverage, including BR ETF versus US ETF
+  support differences across holdings, exposures and look-through, and source
+  fields such as B3 index composition, manager/issuer official holdings and SEC
+  N-PORT.
+- Clarified that asset institutional-holder rows should not be treated as SEC
+  13F data unless returned source fields explicitly identify a 13F source.
+
+
 4.4.2 (2026-07-08)
 ==================
 

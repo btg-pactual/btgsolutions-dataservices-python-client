@@ -75,7 +75,10 @@ class AlternativeDataCompanies:
         Parameters
         ----------------
         query: str
-            Free-text search over company name, ticker, CNPJ, or CIK.
+            Free-text search over company name, ticker, CNPJ, or CVM code.
+            US rows can include CIK and ISIN in the response, but directory
+            search by CIK/ISIN/LEI is not a guaranteed resolver; call the
+            target endpoint directly when it documents those identifiers.
             Field is not required. Example: 'PETROBRAS'.
         jurisdiction: str
             Filter by jurisdiction: 'BR' or 'US'.
@@ -105,7 +108,9 @@ class AlternativeDataCompanies:
         offset: int = 0,
     ) -> dict:
         """
-        Board and executive composition for a company (BR, US, or UK).
+        Board and executive composition for a company. Brazilian and US SEC
+        coverage are the primary loaded sources; UK Companies House coverage is
+        conditional on upstream UK data for the identifier.
         Use get_board_changes() for appointment/departure events and
         get_governance_history() for historical snapshot series.
 
@@ -119,8 +124,10 @@ class AlternativeDataCompanies:
         Parameters
         ----------------
         company_id: str
-            Company identifier. Accepts CNPJ, CVM code, B3 ticker, ISIN, LEI,
-            UK company number, SEC ticker/CIK, or company name.
+            Company identifier. Accepts CNPJ, CVM code, B3 ticker, SEC
+            ticker/CIK and, where endpoint resolution supports it, ISIN or
+            company name. LEI and UK company-number resolution depend on
+            upstream coverage and should be verified with the returned data.
             Field is required. Example: 'PETR4'.
         reference_date: str
             Reference date in YYYY-MM-DD format. Defaults to the most recent filing.
@@ -352,18 +359,18 @@ class AlternativeDataCompanies:
         offset: int = 0,
     ) -> dict:
         """
-        Beneficial ownership records from UK Companies House PSC or US SEC
-        proxy DEF14A data. Brazilian companies are not available in this
-        endpoint and can return 404 / "Company not found". For Brazilian
-        listed-company ownership context, prefer
+        Beneficial ownership records from US SEC proxy DEF14A data and, when
+        loaded upstream, UK Companies House PSC data. Brazilian companies are
+        not available in this endpoint and can return 404 / "Company not
+        found". For Brazilian listed-company ownership context, prefer
         AlternativeDataOwnership.get_ownership_current(),
         get_ownership_control_group() or get_ownership_free_float().
 
         Parameters
         ----------------
         company_id: str
-            UK company number, SEC ticker/CIK, ISIN, LEI or company name.
-            Field is required. Example: 'AAPL'.
+            SEC ticker/CIK/ISIN, or a UK company number/name when Companies
+            House PSC coverage is loaded. Field is required. Example: 'AAPL'.
         holder_type: str
             Holder classification filter such as individual, institution,
             director, officer or ten_percent_owner.
@@ -378,6 +385,95 @@ class AlternativeDataCompanies:
         return self._get("companies/governance-beneficial-ownership", {
             "company_id": company_id,
             "holder_type": holder_type,
+            "limit": limit,
+            "offset": offset,
+        })
+
+    def get_sec_filings(
+        self,
+        company_id: str,
+        form_type: Optional[Union[str, Sequence[str]]] = None,
+        item: Optional[str] = None,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> dict:
+        """
+        SEC EDGAR filing metadata for a US company. Use this when the filing
+        itself is the analytical object, for example 8-K Item 5.02 director or
+        executive changes, DEF 14A proxy statements, or SC 13D/13G ownership
+        filings. This endpoint returns filing metadata and source document
+        URLs; it does not parse full filing text.
+
+        Parameters
+        ----------------
+        company_id: str
+            SEC ticker, CIK, ISIN or company name.
+            Field is required. Example: 'AAPL'.
+        form_type: str or sequence
+            Optional SEC form type filter, comma-separated or a sequence.
+            Examples: '8-K', 'DEF 14A', 'SC 13D,SC 13G'.
+        item: str
+            Optional 8-K item filter. Example: '5.02'.
+        start_date: str
+            Start filing date in YYYY-MM-DD format.
+            Field is not required.
+        end_date: str
+            End filing date in YYYY-MM-DD format.
+            Field is not required.
+        limit: int
+            Maximum number of filings to return.
+            Field is not required. Default: 100.
+        offset: int
+            Number of results to skip for pagination.
+            Field is not required. Default: 0.
+        """
+        return self._get("companies/sec-filings", {
+            "company_id": company_id,
+            "form_type": self._csv_param(form_type),
+            "item": item,
+            "start_date": start_date,
+            "end_date": end_date,
+            "limit": limit,
+            "offset": offset,
+        })
+
+    def get_sec_schedule_13d_13g(
+        self,
+        company_id: str,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> dict:
+        """
+        Parsed SEC Schedule 13D/13G beneficial-ownership filing rows for a US
+        company. Use get_sec_filings() for the filing metadata and this endpoint
+        for holder, share-count and percent-of-class fields.
+
+        Parameters
+        ----------------
+        company_id: str
+            SEC ticker, CIK, ISIN or company name.
+            Field is required. Example: 'AAPL'.
+        start_date: str
+            Start filing date in YYYY-MM-DD format.
+            Field is not required.
+        end_date: str
+            End filing date in YYYY-MM-DD format.
+            Field is not required.
+        limit: int
+            Maximum number of rows to return.
+            Field is not required. Default: 100.
+        offset: int
+            Number of results to skip for pagination.
+            Field is not required. Default: 0.
+        """
+        return self._get("companies/sec-schedule-13d-13g", {
+            "company_id": company_id,
+            "start_date": start_date,
+            "end_date": end_date,
             "limit": limit,
             "offset": offset,
         })
@@ -439,7 +535,10 @@ class AlternativeDataCompanies:
         limit: int = 100,
     ) -> dict:
         """
-        Insider trade transactions from SEC Forms 3/4/5 (US only).
+        Insider trade transactions from SEC Forms 3/4/5 (US only). Populated
+        rows are commonly Form 4 rows and carry source fields such as
+        ``SEC/Form4``; inspect source/accession_number before stating which
+        SEC form supplied a transaction.
         Do not use this endpoint for Brazilian companies; use get_disclosures()
         with document_type='insiders' for Brazilian insider-trading disclosures.
 

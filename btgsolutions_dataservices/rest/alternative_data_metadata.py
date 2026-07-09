@@ -125,7 +125,10 @@ class AlternativeDataMetadata:
         Parameters
         ----------------
         query: str
-            Free-text search over company name, ticker, CNPJ, or CIK.
+            Free-text search over company name, ticker, CNPJ, or CVM code.
+            US rows can include CIK and ISIN in the response, but directory
+            search by CIK/ISIN/LEI is not a guaranteed resolver; call the
+            target endpoint directly when it documents those identifiers.
             Field is not required. Example: 'PETROBRAS'.
         jurisdiction: str
             Filter by jurisdiction: 'BR' or 'US'.
@@ -157,7 +160,10 @@ class AlternativeDataMetadata:
         Parameters
         ----------------
         query: str
-            Free-text search over company name, ticker, CNPJ, or CIK.
+            Free-text search over company name, ticker, CNPJ, or CVM code.
+            US rows can include CIK and ISIN in the response, but directory
+            search by CIK/ISIN/LEI is not a guaranteed resolver; call the
+            target endpoint directly when it documents those identifiers.
             Field is not required. Example: 'PETROBRAS'.
         jurisdiction: str
             Filter by jurisdiction: 'BR' or 'US'.

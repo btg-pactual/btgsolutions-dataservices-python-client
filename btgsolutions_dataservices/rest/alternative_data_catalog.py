@@ -12,9 +12,12 @@ PUBLIC_SOURCES_CONVENTIONS: dict[str, str] = {
     ),
     "fund_id": (
         "Fund identifier accepted by fund endpoints. It can be a fund CNPJ; "
-        "holdings, exposures, history and look-through also accept supported "
-        "Brazilian ETF tickers such as BOVA11. ETFs and funds are not resolved "
-        "through the listed-company directory."
+        "Brazilian ETF-aware endpoints also accept supported BR ETF tickers "
+        "such as BOVA11. Holdings can also accept covered US ETF/fund "
+        "identifiers such as SPY when issuer-official or N-PORT coverage is "
+        "loaded, but exposures and look-through are limited to Brazilian fund "
+        "CNPJs or BR ETF tickers. ETFs and funds are not resolved through the "
+        "listed-company directory."
     ),
     "shareholder_id": (
         "Shareholder identifier used for reverse ownership lookup, usually a "
@@ -82,7 +85,10 @@ PUBLIC_SOURCES_DATA_GAPS: dict[str, str] = {
         "issuer exposure can be based on ticker-like issuer labels and country "
         "exposure can be empty when the source does not classify country. Use "
         "holdings for constituent-level economic exposure and exposures for "
-        "aggregate context."
+        "aggregate context. The exposures and look-through endpoints accept "
+        "Brazilian fund CNPJs and supported BR ETF tickers; US ETF tickers can "
+        "be available through holdings while still being rejected by exposures "
+        "or look-through."
     ),
     "get_fund_lookthrough": (
         "Look-through is useful when a fund holds other funds that can be "
@@ -143,10 +149,13 @@ PUBLIC_SOURCES_DATA_GAPS: dict[str, str] = {
         "liquidity endpoints separately when contextualizing the margin data."
     ),
     "get_beneficial_ownership": (
-        "Coverage is UK/US oriented: UK Companies House PSC and US SEC proxy "
-        "beneficial-owner data. Brazilian listed companies are not available in "
-        "this endpoint and can return 404; use ownership-current, control-group "
-        "and free-float endpoints for Brazilian ownership context."
+        "Coverage is primarily US SEC proxy beneficial-owner data, with "
+        "Companies House PSC rows only when upstream UK coverage is loaded for "
+        "the requested identifier. Brazilian listed companies are not available "
+        "in this endpoint and can return 404; use ownership-current, "
+        "control-group and free-float endpoints for Brazilian ownership context. "
+        "For US companies, ticker, CIK or ISIN can work directly even when the "
+        "company-directory search endpoint does not resolve that CIK or ISIN."
     ),
     "get_asset_institutional_holders": (
         "Institutional-holder coverage comes from the precomputed asset-holder "
@@ -157,7 +166,10 @@ PUBLIC_SOURCES_DATA_GAPS: dict[str, str] = {
         "that ticker-to-ISIN fallback was used. This endpoint still does not run "
         "the live fund-portfolio/ETF holding lookup used by "
         "get_asset_fund_holders; use get_asset_fund_holders when this endpoint "
-        "is empty or when ETF/fund-holder coverage is needed."
+        "is empty or when ETF/fund-holder coverage is needed. Do not describe "
+        "these rows as SEC 13F unless the returned source fields explicitly "
+        "identify a 13F source; fund_asset_ownership rows are fund/ETF holder "
+        "snapshots, not issuer top-shareholder or 13F summaries."
     ),
     "get_disclosure_documents_repurchase": (
         "Share-repurchase disclosure coverage can be thin for many companies. "
@@ -342,13 +354,16 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
         "method": "GET",
         "client": "AlternativeDataMetadata",
         "description": (
-            "Search listed-company metadata by name, ticker, CNPJ, CVM code, "
-            "CIK or ISIN. Use this to resolve a company identifier before "
-            "governance, ownership, sector, financial-statement or disclosure "
-            "endpoints."
+            "Search listed-company metadata by name, ticker, CNPJ or CVM code; "
+            "US rows can include CIK and ISIN fields in the response. Use this "
+            "to resolve a company identifier before governance, ownership, "
+            "sector, financial-statement or disclosure endpoints. If a CIK, "
+            "ISIN or LEI search returns no directory match, try the relevant "
+            "company endpoint directly when its parameter documentation accepts "
+            "that identifier."
         ),
         "parameters": {
-            "query": "Free-text query over company name, ticker, CNPJ, CVM code, CIK or ISIN.",
+            "query": "Free-text query over company name, ticker, CNPJ or CVM code; returned US rows can include CIK and ISIN fields.",
             "jurisdiction": "Optional jurisdiction filter such as 'BR' or 'US'.",
             "limit": "Maximum number of results.",
             "offset": "Pagination offset.",
@@ -387,7 +402,10 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
             "List ETFs available in the public-sources ETF registry. Use this "
             "for ETF discovery because ETFs are not returned by listed-company "
             "search endpoints. Use include_metrics=False for lightweight "
-            "autocomplete/search responses."
+            "autocomplete/search responses. Returned rows can combine fund "
+            "identity, issuer, index metadata and latest NAV/AUM/holder metrics "
+            "from sources such as CVM/FNET, B3 index composition or manager/"
+            "issuer official holdings, depending on coverage."
         ),
         "parameters": {
             "query": "Free-text filter over ticker, fund name, CNPJ or issuer.",
@@ -733,13 +751,15 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
         "method": "GET",
         "client": "AlternativeDataCompanies",
         "description": (
-            "Get beneficial-owner records from UK Companies House PSC or US SEC "
-            "proxy DEF14A data. Brazilian companies are not available here."
+            "Get beneficial-owner records from US SEC proxy DEF14A data and, "
+            "when loaded upstream, UK Companies House PSC data. Brazilian "
+            "companies are not available here."
         ),
         "parameters": {
             "company_id": (
-                "UK company number, SEC ticker/CIK, ISIN, LEI or company name. "
-                "Use values such as AAPL or 0000320193 for US coverage."
+                "SEC ticker/CIK/ISIN, or a UK company number/name when "
+                "Companies House PSC coverage is loaded. Use values such as "
+                "AAPL, 0000320193 or US0378331005 for US coverage."
             ),
             "holder_type": (
                 "Optional holder classification such as individual, institution, "
@@ -753,6 +773,62 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
             "ownership_liquidity_bridge",
         ],
         "caveats": [PUBLIC_SOURCES_DATA_GAPS["get_beneficial_ownership"]],
+    },
+    "AlternativeDataCompanies.get_sec_filings": {
+        "category": "companies",
+        "path": "companies/sec-filings",
+        "method": "GET",
+        "client": "AlternativeDataCompanies",
+        "description": (
+            "Get SEC EDGAR filing metadata for a US company. Use form_type='8-K' "
+            "with item='5.02' for director/officer change events, form_type='DEF 14A' "
+            "for proxy/governance context, and SC 13D/SC 13G forms for beneficial "
+            "ownership filing metadata. This endpoint returns filing metadata and "
+            "source URLs, not full filing-text parsing."
+        ),
+        "parameters": {
+            "company_id": "SEC ticker, CIK, ISIN or company name.",
+            "form_type": "Optional SEC form type filter; accepts comma-separated values such as '8-K,DEF 14A'.",
+            "item": "Optional 8-K item filter such as '5.02'.",
+            "start_date": "Start filing date in YYYY-MM-DD.",
+            "end_date": "End filing date in YYYY-MM-DD.",
+            "limit": "Maximum number of filings.",
+            "offset": "Pagination offset.",
+        },
+        "relationships": [
+            "company_resolution", "document_market_event_bridge",
+            "ownership_fallback",
+        ],
+        "caveats": [
+            "10-K metadata is not currently loaded when this endpoint returns zero rows for form_type='10-K'.",
+            "8-K item metadata can exist without a parsed event narrative; inspect primary_document before summarizing.",
+        ],
+    },
+    "AlternativeDataCompanies.get_sec_schedule_13d_13g": {
+        "category": "companies",
+        "path": "companies/sec-schedule-13d-13g",
+        "method": "GET",
+        "client": "AlternativeDataCompanies",
+        "description": (
+            "Get parsed SEC Schedule 13D/13G beneficial-ownership rows for a US "
+            "company, including reporting owner, beneficially owned shares and "
+            "percent of class when available. Use get_sec_filings for filing "
+            "metadata/source URLs and this endpoint for holder/share fields."
+        ),
+        "parameters": {
+            "company_id": "SEC ticker, CIK, ISIN or company name.",
+            "start_date": "Start filing date in YYYY-MM-DD.",
+            "end_date": "End filing date in YYYY-MM-DD.",
+            "limit": "Maximum number of rows.",
+            "offset": "Pagination offset.",
+        },
+        "relationships": [
+            "company_resolution", "ownership_fallback",
+            "ownership_liquidity_bridge", "document_market_event_bridge",
+        ],
+        "caveats": [
+            "Schedule 13D/G rows are US SEC beneficial-ownership filings and should not be treated as Brazilian ownership snapshots.",
+        ],
     },
     "AlternativeDataCompanies.get_corporate_registry": {
         "category": "companies",
@@ -781,8 +857,9 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
         "method": "GET",
         "client": "AlternativeDataCompanies",
         "description": (
-            "Get US SEC insider-trading transactions for a US company ticker or "
-            "CIK. This endpoint is not for Brazilian companies."
+            "Get US SEC insider-trading transactions from Forms 3/4/5 for a US "
+            "company ticker or CIK. In practice, populated rows are commonly "
+            "source='SEC/Form4'. This endpoint is not for Brazilian companies."
         ),
         "parameters": {
             "company_id": "US SEC ticker or CIK.",
@@ -983,6 +1060,10 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
             "Get a fund or ETF portfolio holdings/positions for a reference date. "
             "Use this for constituent assets and weights or values, not NAV history. "
             "Use summary=True and include_raw=False for a compact payload. "
+            "Rows expose source/snapshot_type fields such as B3 index composition, "
+            "manager official holdings, issuer-official holdings or SEC N-PORT "
+            "depending on the covered fund. US official ETF holdings can identify "
+            "assets by CUSIP when ticker/ISIN enrichment is unavailable. "
             "For CVM/CDA rows without same-day daily NAV, position_weight may be "
             "computed from the latest prior daily report within seven days; "
             "company_nav_reference_date and company_nav_source identify that "
@@ -1218,6 +1299,34 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
         },
         "relationships": ["document_summary", "document_market_event_bridge"],
     },
+    "AlternativeDataOwnership.get_sec_13f_holdings": {
+        "category": "ownership",
+        "path": "sec/13f-holdings",
+        "method": "GET",
+        "client": "AlternativeDataOwnership",
+        "description": (
+            "Get SEC 13F-HR institutional investment-manager holding rows by "
+            "manager_id and/or asset_id. manager_id accepts manager CIK, manager "
+            "name or a SEC registrant ticker when the manager is itself a SEC "
+            "company. asset_id accepts issuer ticker, CUSIP, ISIN or issuer name."
+        ),
+        "parameters": {
+            "manager_id": "Optional SEC manager CIK, manager name or SEC registrant ticker.",
+            "asset_id": "Optional issuer ticker, CUSIP, ISIN or issuer name.",
+            "start_date": "Start filing date in YYYY-MM-DD.",
+            "end_date": "End filing date in YYYY-MM-DD.",
+            "limit": "Maximum number of rows.",
+            "offset": "Pagination offset.",
+        },
+        "relationships": [
+            "company_resolution", "ownership_fallback",
+            "ownership_liquidity_bridge", "document_market_event_bridge",
+        ],
+        "caveats": [
+            "13F rows are manager filing disclosures, not issuer top-shareholder tables.",
+            "13F does not cover all holders, short positions or non-reporting investors.",
+        ],
+    },
     "AlternativeDataOwnership.get_ownership_control_group": {
         "category": "ownership",
         "path": "companies/ownership-control-group",
@@ -1377,6 +1486,8 @@ PUBLIC_SOURCES_TOOL_ENDPOINTS: dict[str, str] = {
     "get_governance_compensation": "AlternativeDataCompanies.get_governance_compensation",
     "get_related_party": "AlternativeDataCompanies.get_governance_related_party",
     "get_beneficial_ownership": "AlternativeDataCompanies.get_governance_beneficial_ownership",
+    "get_sec_filings": "AlternativeDataCompanies.get_sec_filings",
+    "get_sec_schedule_13d_13g": "AlternativeDataCompanies.get_sec_schedule_13d_13g",
     "get_corporate_registry": "AlternativeDataCompanies.get_corporate_registry",
     "get_insider_trades": "AlternativeDataCompanies.get_insider_trades",
     "get_board_changes": "AlternativeDataCompanies.get_board_changes",
@@ -1400,6 +1511,7 @@ PUBLIC_SOURCES_TOOL_ENDPOINTS: dict[str, str] = {
     "get_ownership_change_events": "AlternativeDataOwnership.get_ownership_change_events",
     "get_ownership_official_notices": "AlternativeDataOwnership.get_ownership_official_notices",
     "get_notice_summary": "AlternativeDataOwnership.get_notice_summary",
+    "get_sec_13f_holdings": "AlternativeDataOwnership.get_sec_13f_holdings",
     "get_control_group": "AlternativeDataOwnership.get_ownership_control_group",
     "get_free_float": "AlternativeDataOwnership.get_ownership_free_float",
     "get_shareholder_holdings": "AlternativeDataOwnership.get_shareholder_holdings",

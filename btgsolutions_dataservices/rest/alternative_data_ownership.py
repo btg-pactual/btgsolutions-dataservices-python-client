@@ -364,6 +364,57 @@ class AlternativeDataOwnership:
             "offset": offset,
         })
 
+    def get_sec_13f_holdings(
+        self,
+        manager_id: Optional[str] = None,
+        asset_id: Optional[str] = None,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> dict:
+        """
+        SEC 13F-HR institutional investment-manager holdings. Use ``manager_id``
+        for manager-level filings (CIK, manager name or SEC ticker when the
+        manager is itself a SEC registrant) and ``asset_id`` for issuer exposure
+        lookup (ticker, CUSIP, ISIN or issuer name).
+
+        13F rows are manager filing disclosures, not issuer top-shareholder
+        tables. They do not cover every holder, non-reporting investors, short
+        positions or all economic exposure. Use this endpoint with SEC filings,
+        beneficial ownership and market data when the question needs
+        institutional-holder context for US-listed assets.
+
+        Parameters
+        ----------------
+        manager_id: str
+            Optional SEC manager CIK, manager name or registrant ticker.
+            Example: '0000886982' or 'GOLDMAN SACHS'.
+        asset_id: str
+            Optional issuer ticker, CUSIP, ISIN or issuer name.
+            Example: 'AAPL' or 'US0378331005'.
+        start_date: str
+            Start filing date in YYYY-MM-DD format.
+            Field is not required.
+        end_date: str
+            End filing date in YYYY-MM-DD format.
+            Field is not required.
+        limit: int
+            Maximum number of rows to return.
+            Field is not required. Default: 100.
+        offset: int
+            Number of results to skip for pagination.
+            Field is not required. Default: 0.
+        """
+        return self._get("sec/13f-holdings", {
+            "manager_id": manager_id,
+            "asset_id": asset_id,
+            "start_date": start_date,
+            "end_date": end_date,
+            "limit": limit,
+            "offset": offset,
+        })
+
     def get_institutional_holders(
         self,
         identifier: str,

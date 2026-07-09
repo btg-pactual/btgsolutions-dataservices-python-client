@@ -66,7 +66,10 @@ class AlternativeDataFunds:
         """
         List ETFs available in the public-sources ETF registry.
         Use this for ETF discovery because ETFs are not returned by listed-
-        company search endpoints.
+        company search endpoints. Rows can combine fund identity, issuer,
+        index metadata and latest NAV/AUM/holder metrics from sources such as
+        CVM/FNET, B3 index composition or manager/issuer official holdings,
+        depending on coverage.
 
         Parameters
         ----------------
@@ -130,7 +133,11 @@ class AlternativeDataFunds:
         asset ticker. For CVM/CDA rows without same-day daily NAV, the API may
         compute position_weight from the latest prior daily report within seven
         days; company_nav_reference_date and company_nav_source identify that
-        NAV source when it differs from the holdings reference date.
+        NAV source when it differs from the holdings reference date. Rows expose
+        source/snapshot_type fields such as B3 index composition, manager
+        official holdings, issuer-official holdings or SEC N-PORT depending on
+        coverage. US official ETF holdings can identify assets by CUSIP when
+        ticker/ISIN enrichment is unavailable.
 
         Parameters
         ----------------
@@ -180,7 +187,10 @@ class AlternativeDataFunds:
     ) -> dict:
         """
         Portfolio exposures for a Brazilian CVM fund or ETF (asset class,
-        issuer, sector, indexer, maturity, country).
+        issuer, sector, indexer, maturity, country). This endpoint accepts
+        Brazilian fund CNPJs and supported BR ETF tickers. US ETF tickers can
+        be available in get_holdings() while still being outside exposures
+        coverage.
         Use sector exposure with company sector endpoints when comparing fund
         exposure with B3 company peer groups.
         Exposure dimensions are source-dependent: for Brazilian ETFs, issuer
@@ -250,8 +260,11 @@ class AlternativeDataFunds:
         limit: int = 100,
     ) -> dict:
         """
-        Look-through resolution for a fund or ETF (resolves nested fund
-        positions to underlying assets when available).
+        Look-through resolution for a Brazilian fund or ETF (resolves nested
+        fund positions to underlying assets when available). This endpoint
+        accepts Brazilian fund CNPJs and supported BR ETF tickers; US ETF
+        tickers can be available in get_holdings() while still being outside
+        look-through coverage.
         Use this after holdings when nested fund positions need to be expanded
         into underlying assets.
         For direct-equity ETFs, look-through can return opaque asset_key values
