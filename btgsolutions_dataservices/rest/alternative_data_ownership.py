@@ -73,10 +73,11 @@ class AlternativeDataOwnership:
         filter. For Brazilian ownership questions, call get_ownership_current(),
         get_ownership_control_group(), get_ownership_free_float() and
         get_ownership_official_notices() when this endpoint returns no rows.
-        Some responses can include multiple rows for the same holder across
-        share classes, ownership categories, filings or source protocols;
-        inspect category, class, protocol/source and reference date before
-        aggregating percentages.
+        The API deduplicates repeated rows from older FRE source documents for
+        the same reference date where possible, while still preserving distinct
+        rows for the same holder when they represent different share classes,
+        ownership categories or roles. Inspect category, class, protocol/source
+        and reference date before aggregating percentages.
 
         Parameters
         ----------------
@@ -108,7 +109,9 @@ class AlternativeDataOwnership:
         Use this as the primary current ownership summary when top-shareholder
         snapshots are empty or when a compact ownership object is sufficient.
         Reference dates usually come from CVM/FRE reporting periods or parsed
-        IR structures and are not necessarily strict as-of timestamps.
+        IR structures and are not necessarily strict as-of timestamps. For
+        Brazilian FRE data, control/free-float blocks are based on the latest
+        source document for the selected reference date when available.
 
         Parameters
         ----------------
@@ -291,7 +294,9 @@ class AlternativeDataOwnership:
         Use this for who controls the company; use get_shareholder_holdings()
         for a reverse lookup of one holder across companies.
         Reference dates usually come from CVM/FRE reporting periods and can
-        denote a filing year/base period rather than the load date.
+        denote a filing year/base period rather than the load date. The API
+        filters current control rows to the latest FRE source document for the
+        selected reference date when protocols identify multiple filed versions.
 
         Parameters
         ----------------
@@ -306,7 +311,10 @@ class AlternativeDataOwnership:
         Free float breakdown for a company.
         Reference dates usually come from CVM/FRE reporting periods or parsed
         IR structures and can denote a filing year/base period rather than the
-        load date.
+        load date. For Brazilian FRE distribution-of-capital tables, numeric
+        versions are ordered numerically so version 13 is treated as newer than
+        version 9. Returned zero values can be valid source values rather than
+        missing data.
 
         Parameters
         ----------------

@@ -597,6 +597,12 @@ companies.get_disclosures(company_id='PETR4', document_type='repurchase')
 companies.get_disclosures(company_id='PETR4', document_type='insider')
 ```
 
+For Brazilian governance endpoints, current board and summary responses prefer
+the latest raw FRE filing when available. Returned governance summaries can
+include `latest_reference_date`, `latest_version`, `latest_document_id` and
+`structure_source`; alternate B3 tickers/units such as `BPAC11` can resolve to
+the underlying listed company when covered by the source metadata.
+
 #### Alternative Data - People
 
 ```python
@@ -637,6 +643,13 @@ ownership.get_shareholder_holdings(shareholder_id='00.000.000/0001-91')
 ownership.get_institutional_holders(identifier='VALE3')
 ownership.get_fund_holders(identifier='PETR4', identifier_type='b3_ticker')
 ```
+
+For Brazilian ownership/free-float endpoints, current control and free-float
+responses use the latest FRE source document/version for the selected reference
+date when available. Repeated older source documents are deduplicated where
+possible, while distinct rows for the same holder across classes, roles or
+ownership categories are preserved. Zero free-float or independence percentages
+can be valid source values, not missing data.
 
 #### Alternative Data - Macro & Markets
 

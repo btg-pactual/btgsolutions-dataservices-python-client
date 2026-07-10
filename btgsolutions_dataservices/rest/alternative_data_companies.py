@@ -114,12 +114,16 @@ class AlternativeDataCompanies:
         Use get_board_changes() for appointment/departure events and
         get_governance_history() for historical snapshot series.
 
-        For Brazilian filings, ``body='board'`` can include Conselho Fiscal
-        rows alongside Conselho de Administracao rows. For a board-of-directors
-        answer, filter returned rows by governance_body or role. Committee
-        responses can include broad aggregate groups such as Outros Comites; do
-        not infer granular committee names unless they are present in returned
-        fields.
+        For Brazilian filings, the latest FRE raw rows are preferred over
+        older materialized snapshots and numeric FRE versions are ordered
+        numerically (for example version 13 is newer than version 9).
+        ``body='board'`` preserves the historical contract and can include
+        Conselho Fiscal rows alongside Conselho de Administracao rows; for a
+        board-of-directors answer, filter returned rows by governance_body or
+        role. ``body='executive'`` returns one row per person after resolving
+        duplicate mixed board/executive FRE rows. Committee responses can
+        include broad aggregate groups such as Outros Comites; do not infer
+        granular committee names unless they are present in returned fields.
 
         Parameters
         ----------------
@@ -161,7 +165,13 @@ class AlternativeDataCompanies:
     def get_governance_summary(self, company_id: str) -> dict:
         """
         Latest governance snapshot for a company (board size, independence,
-        committees, CEO name, etc.).
+        fiscal council size, executive count, committees, CEO name, etc.).
+        For Brazilian companies, the API derives current counts from the
+        latest available FRE raw filing when present, exposes
+        latest_reference_date/latest_version/latest_document_id and can mark
+        structure_source='fre_raw'. This avoids stale materialized summaries
+        and fixes B3 tickers that resolve through alternate traded classes
+        such as units.
         Use get_board() for individual directors/officers and
         AlternativeDataOwnership.get_ownership_free_float() for detailed
         free-float breakdowns.

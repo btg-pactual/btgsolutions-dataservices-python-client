@@ -53,12 +53,16 @@ PUBLIC_SOURCES_DATA_GAPS: dict[str, str] = {
         "can change matches."
     ),
     "get_company_board": (
-        "For Brazilian companies, body='board' can include Conselho Fiscal rows "
+        "For Brazilian companies, current board/executive composition prefers "
+        "the latest raw FRE rows over older materialized snapshots and orders "
+        "FRE versions numerically. body='board' can include Conselho Fiscal rows "
         "alongside Conselho de Administracao rows depending on the filing. For "
         "a board-of-directors answer, filter returned rows by governance_body "
-        "or role to keep Conselho de Administracao only. Committee responses "
-        "can include broad aggregates such as Outros Comites; do not infer "
-        "granular committee names unless they are present in returned fields."
+        "or role to keep Conselho de Administracao only. body='executive' "
+        "deduplicates mixed board/executive rows by person where possible. "
+        "Committee responses can include broad aggregates such as Outros "
+        "Comites; do not infer granular committee names unless they are present "
+        "in returned fields."
     ),
     "get_board_changes": (
         "Brazilian board-change rows can be materialized from FRE snapshot "
@@ -108,10 +112,11 @@ PUBLIC_SOURCES_DATA_GAPS: dict[str, str] = {
         "get_ownership_free_float and get_ownership_official_notices when this "
         "endpoint returns no rows. "
         "This endpoint does not synthesize top holders from current ownership "
-        "or free-float tables. Some responses can include multiple rows for "
-        "the same holder across share classes, ownership categories, filings "
-        "or source protocols; inspect category, class, protocol/source and "
-        "reference date before aggregating percentages."
+        "or free-float tables. The API deduplicates repeated rows from older "
+        "FRE source documents for the same reference date where possible, while "
+        "preserving distinct rows for the same holder across share classes, "
+        "ownership categories or roles; inspect category, class, protocol/source "
+        "and reference date before aggregating percentages."
     ),
     "ownership_reporting_dates": (
         "Brazilian ownership and free-float reference_date fields often come "
@@ -119,7 +124,9 @@ PUBLIC_SOURCES_DATA_GAPS: dict[str, str] = {
         "structures. They are reporting/reference dates, not necessarily the "
         "calendar date when the data was loaded or a strict as-of timestamp; a "
         "reference_date can be after the current calendar date when it denotes "
-        "a filing year/base period."
+        "a filing year/base period. For FRE tables with multiple filed versions "
+        "on the same reference date, current control/free-float/governance "
+        "responses prefer the latest source document or numeric version."
     ),
     "get_ownership_history": (
         "Ownership history uses the same normalized ownership_snapshot layer as "
@@ -632,9 +639,10 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
         "description": (
             "Get members of a company's governance body. body can be board, "
             "executive or committee; committee filters a specific committee when "
-            "body='committee'. For Brazilian filings, body='board' can include "
-            "Conselho Fiscal rows; filter governance_body/role for Conselho de "
-            "Administracao when answering board-of-directors questions."
+            "body='committee'. For Brazilian filings, latest raw FRE rows are "
+            "preferred when present; body='board' can include Conselho Fiscal "
+            "rows; filter governance_body/role for Conselho de Administracao "
+            "when answering board-of-directors questions."
         ),
         "parameters": {
             "company_id": PUBLIC_SOURCES_CONVENTIONS["company_id"],
@@ -655,8 +663,11 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
         "client": "AlternativeDataCompanies",
         "description": (
             "Get a compact latest governance snapshot for a company as a "
-            "composite object. It can include board size, committees, CEO and "
-            "free-float-related fields when available."
+            "composite object. For Brazilian companies, current counts are "
+            "derived from the latest raw FRE filing when available and can "
+            "include latest_reference_date, latest_version, latest_document_id, "
+            "structure_source, board size, independent members, fiscal council "
+            "size, executives, committees and CEO."
         ),
         "parameters": {"company_id": PUBLIC_SOURCES_CONVENTIONS["company_id"]},
         "relationships": ["company_resolution", "company_trading_bridge"],
@@ -1170,7 +1181,9 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
         "description": (
             "Get top shareholders for a company from the normalized "
             "ownership_snapshot layer when shareholder-level snapshots are "
-            "available. Brazilian CVM/FRE rows are periodic filing snapshots."
+            "available. Brazilian CVM/FRE rows are periodic filing snapshots; "
+            "older repeated FRE source documents for the same reference date "
+            "are deduplicated where possible."
         ),
         "parameters": {
             "company_id": PUBLIC_SOURCES_CONVENTIONS["company_id"],
@@ -1198,7 +1211,9 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
         "client": "AlternativeDataOwnership",
         "description": (
             "Get current ownership structure of a listed company as a composite "
-            "object. Use this for latest control, free-float and ownership summary context."
+            "object. Use this for latest control, free-float and ownership summary "
+            "context. For Brazilian FRE data, current control/free-float blocks "
+            "prefer the latest source document for the selected reference date."
         ),
         "parameters": {"company_id": PUBLIC_SOURCES_CONVENTIONS["company_id"]},
         "relationships": [
@@ -1335,7 +1350,10 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
         "description": (
             "Get controlling shareholders, shareholder agreements and control "
             "evidence for a company as a composite object. Use this for who "
-            "controls the company, not for all holder positions."
+            "controls the company, not for all holder positions. For Brazilian "
+            "FRE rows, current control holders are restricted to the latest "
+            "source document for the selected reference date when protocols "
+            "identify multiple filed versions."
         ),
         "parameters": {"company_id": PUBLIC_SOURCES_CONVENTIONS["company_id"]},
         "relationships": [
@@ -1351,7 +1369,9 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
         "client": "AlternativeDataOwnership",
         "description": (
             "Get free-float percentage and share-class details for a company as "
-            "a composite object. Use this for investable-float questions."
+            "a composite object. Use this for investable-float questions. "
+            "Brazilian FRE distribution-of-capital versions are ordered "
+            "numerically; returned zero percentages can be valid source values."
         ),
         "parameters": {
             "company_id": PUBLIC_SOURCES_CONVENTIONS["company_id"],

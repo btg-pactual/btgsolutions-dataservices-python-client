@@ -1,3 +1,16 @@
+4.5.1 (2026-07-10)
+==================
+
+Changed
+
+- Updated Alternative Data company governance and ownership/free-float
+  docstrings, README notes and technical catalog entries to match the backend
+  behavior that prefers latest raw FRE filings, orders FRE versions
+  numerically, resolves alternate traded tickers such as units when metadata is
+  available, deduplicates repeated older FRE source documents and preserves
+  valid zero source values.
+
+
 4.5.0 (2026-07-09)
 ==================
 
