@@ -1,5 +1,5 @@
 import os
-from typing import Optional
+from typing import Dict, Optional
 from ..exceptions import BadResponse
 import requests
 from ..config import url_api_v1, url_apis, url_apis_v3
@@ -8,6 +8,25 @@ import json
 import pandas as pd
 from io import BytesIO
 import pyarrow.parquet as pq
+
+BILLING_HEADER_NAMES = (
+    "X-Dry-Run",
+    "X-Billable",
+    "X-Requested-Rows",
+    "X-Current-Rows",
+    "X-Contracted-Limit-Rows",
+    "X-Remaining-Rows",
+    "X-Already-Billed",
+    "X-Would-Exceed-Limit",
+)
+
+
+def extract_billing_headers(headers) -> Dict[str, str]:
+    return {
+        header_name: headers.get(header_name)
+        for header_name in BILLING_HEADER_NAMES
+        if headers.get(header_name) is not None
+    }
 
 def download_compressed_file(url, headers):
     
@@ -164,7 +183,9 @@ class BulkData:
         ticker:str,
         date:str,
         data_type:str='trades',
-        raw_data:bool=False
+        raw_data:bool=False,
+        return_billing_headers:bool=False,
+        dry_run:bool=False,
     ):
         """
         This method provides tick-by-tick market data (trades, book events, book snapshots) for a given ticker and date.
@@ -184,11 +205,24 @@ class BulkData:
         raw_data: bool
             If false, returns data in a dataframe. If true, returns raw data.
             Field is not required. Default: False.
+        return_billing_headers: bool
+            If true, returns billing headers with the data.
+            Field is not required. Default: False.
+        dry_run: bool
+            If true, checks billing quota without downloading data and returns billing headers.
+            Field is not required. Default: False.
         """
 
         url = f"{url_apis}/marketdata/bulkdata/{data_type}?ticker={ticker}&date={date}"
+        if dry_run:
+            url = f"{url}&dry_run=true"
 
         response = requests.request("GET", url,  headers=self.headers)
+        billing_headers = extract_billing_headers(response.headers)
+
+        if response.status_code == 204 and dry_run:
+            return billing_headers
+
         if response.status_code == 200:
 
             try:
@@ -198,6 +232,8 @@ class BulkData:
                     parquet_file = pq.ParquetFile(parquet_buffer)
                     df = parquet_file.read().to_pandas()
 
+                    if return_billing_headers:
+                        return df, billing_headers
                     return df
 
                 else:
@@ -207,6 +243,8 @@ class BulkData:
                     # Write the content to a file
                     with open(filename, 'wb') as file:
                         file.write(response.content)
+                    if return_billing_headers:
+                        return billing_headers
                     return None
                 
             except Exception as e:

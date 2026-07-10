@@ -328,6 +328,15 @@ bulk_data.get_data(ticker='DI1F18', date='2017-01-02', data_type='trades')
 # bulk_data.get_data(ticker='PETR4', date='2025-05-07', data_type='instrument-status')
 ```
 
+##### Get Data With Billing Headers
+
+```python
+import btgsolutions_dataservices as btg
+bulk_data = btg.BulkData(api_key='YOUR_API_KEY')
+df, billing_headers = bulk_data.get_data(ticker='PETR4', date='2025-06-20', data_type='trades', return_billing_headers=True)
+# billing_headers = bulk_data.get_data(ticker='PETR4', date='2025-06-20', data_type='trades', dry_run=True)
+```
+
 ##### Security List
 
 ```python
