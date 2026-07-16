@@ -741,3 +741,13 @@ ref = btg.ReferenceData(api_key='YOUR_API_KEY')
 ref.ticker_reference(tickers=['VALE3','PETR4'])
 ```
 
+#### Algo Hunter
+
+```python
+import btgsolutions_dataservices as btg
+algohunter = AlgoHunter(api_key='YOUR_API_KEY')
+algohunter.get_thermometer()
+algohunter.get_recently_detected(ticker='PETR4')
+```
+
+

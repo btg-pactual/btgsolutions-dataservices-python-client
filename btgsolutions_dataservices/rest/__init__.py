@@ -16,6 +16,7 @@ from .ticker_last_event_polling import TickerLastEventPolling
 from .broker_reference import BrokerReference
 from .book_scope import BookScope
 from .broker_analytics import BrokerAnalytics
+from .algohunter import AlgoHunter
 from .alternative_data_metadata import AlternativeDataMetadata
 from .alternative_data_companies import AlternativeDataCompanies
 from .alternative_data_people import AlternativeDataPeople
