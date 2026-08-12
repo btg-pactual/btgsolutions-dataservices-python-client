@@ -259,6 +259,7 @@ class AlternativeDataOwnership:
         self,
         url: str,
         lang: str = "pt",
+        title: Optional[str] = None,
         timeout: int = 120,
     ) -> dict:
         """
@@ -274,13 +275,17 @@ class AlternativeDataOwnership:
         lang: str
             Summary language: 'pt', 'en', or 'es'.
             Field is not required. Default: 'pt'.
+        title: str
+            Optional document title to store with the generated or cached
+            summary.
+            Field is not required.
         timeout: int
             Request timeout in seconds. AI summaries can take longer than
             standard data endpoints when a new summary is generated.
             Field is not required. Default: 120.
         """
         endpoint = f"{url_api_v1}/public-sources/companies/notices/summary"
-        params = {"url": url, "lang": lang}
+        params = {"url": url, "lang": lang, "title": title}
         params = {k: v for k, v in params.items() if v is not None and v != ""}
         headers = {"authorization": f"Bearer {self.__authenticator.token}"}
         response = requests.get(endpoint, params=params, headers=headers, timeout=timeout)

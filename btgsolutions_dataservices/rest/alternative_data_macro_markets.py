@@ -20,6 +20,8 @@ class AlternativeDataMacroMarkets:
     >>> macro = AlternativeDataMacroMarkets(api_key='YOUR_API_KEY')
     >>> macro.get_macro_indicators(indicator='selic')
     >>> macro.get_macro_indicators(indicator='ipca', start_date='2024-01', end_date='2024-12')
+    >>> macro.get_macro_indicators(indicator='copom', type='ata', start_date='2026-01', end_date='2026-12')
+    >>> macro.get_macro_indicators(indicator='copom', type='comunicado', start_date='2026-01', end_date='2026-12')
     >>> macro.get_dpmfi(status='dados_oficiais')
     >>> macro.get_maximum_theoretical_margin(asset='PETR4')
 
@@ -116,7 +118,16 @@ class AlternativeDataMacroMarkets:
             Data source filter (e.g. 'BCB/Demab', 'IBGE/DPE').
             Field is not required.
         type: str
-            Variation type for PIM/PMC/PMS/GDP: 'yoy' or 'mom'.
+            Subseries/type filter. For SELIC use 'monthly_accumulated'
+            (default; BCB SGS 4390 monthly accumulated Selic Over),
+            'accumulated_12m' (compounded trailing-12-month Selic Over), or
+            'annualized_daily' (BCB SGS 1178 daily annualized Selic Over), or
+            'target_rate' (BCB SGS 432 COPOM target-rate change events).
+            For COPOM use 'ata', 'atas', 'minute', 'minutes' or 'minuta' for
+            minutes/atas; use 'comunicado', 'comunicados', 'statement' or
+            'statements' for post-meeting statements/comunicados. Omit for
+            COPOM to return minutes/atas.
+            For PIM/PMC/PMS/GDP use 'yoy' or 'mom'.
             Field is not required.
         aggregate: str
             Optional compact aggregation mode. RREO supports 'timeline' and

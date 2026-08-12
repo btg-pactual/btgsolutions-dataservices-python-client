@@ -1,3 +1,27 @@
+4.7.1 (2026-07-20)
+==================
+
+Added
+
+- Added ``include_total`` to compact financial-statement and disclosure calls
+  so dashboards can skip expensive count queries when pagination totals are not
+  needed.
+
+Changed
+
+- Clarified ``AlternativeDataMacroMarkets.get_macro_indicators`` SELIC
+  ``type`` values: ``monthly_accumulated`` (default), ``accumulated_12m`` and
+  ``annualized_daily``.
+- Documented SELIC ``type=target_rate`` for COPOM target-rate change events.
+- Documented COPOM ``type`` aliases for minutes/atas
+  (``ata``/``minute``) and post-meeting statements/comunicados
+  (``comunicado``/``statement``).
+- Clarified ETF directory fields: holdings snapshots now use
+  ``holdings_reference_date``/``holdings_source`` while daily AUM, NAV and
+  holder metrics use ``total_value``, ``quota_value``,
+  ``shareholders_count`` and ``nav_shareholders_values_source``.
+
+
 4.5.1 (2026-07-10)
 ==================
 

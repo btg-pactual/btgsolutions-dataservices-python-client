@@ -635,6 +635,11 @@ funds.get_lookthrough(fund_id='BOVA11')
 # funds.get_manager_aggregate_holdings(manager_id='...')
 ```
 
+ETF directory rows separate the holdings snapshot from daily metrics: holdings
+fields use `holdings_reference_date` and `holdings_source`; AUM, NAV and holder
+metrics use `total_value`, `quota_value`, `shareholders_count`, their own
+`*_reference_date` fields and `nav_shareholders_values_source`.
+
 #### Alternative Data - Ownership
 
 ```python
@@ -666,6 +671,10 @@ can be valid source values, not missing data.
 import btgsolutions_dataservices as btg
 macro = btg.AlternativeDataMacroMarkets(api_key='YOUR_API_KEY')
 macro.get_macro_indicators(indicator='selic')
+macro.get_macro_indicators(indicator='selic', type='accumulated_12m', start_date='2025-07', end_date='2026-06')
+macro.get_macro_indicators(indicator='selic', type='target_rate', start_date='2026-01', end_date='2026-12')
+macro.get_macro_indicators(indicator='copom', type='ata', start_date='2026-01', end_date='2026-12')
+macro.get_macro_indicators(indicator='copom', type='comunicado', start_date='2026-01', end_date='2026-12')
 macro.get_macro_indicators(indicator='ipca_contributions', start_date='2024-01', end_date='2024-12')
 macro.get_macro_indicators(indicator='gdp', type='yoy')
 macro.get_macro_indicators(indicator='comexstat', year='2024', state='SP')

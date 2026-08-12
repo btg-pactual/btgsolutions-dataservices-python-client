@@ -67,9 +67,11 @@ class AlternativeDataFunds:
         List ETFs available in the public-sources ETF registry.
         Use this for ETF discovery because ETFs are not returned by listed-
         company search endpoints. Rows can combine fund identity, issuer,
-        index metadata and latest NAV/AUM/holder metrics from sources such as
-        CVM/FNET, B3 index composition or manager/issuer official holdings,
-        depending on coverage.
+        index metadata, latest holdings snapshot fields and daily NAV/AUM/
+        holder metrics. Holdings fields use holdings_reference_date and
+        holdings_source; daily metrics use total_value, quota_value and
+        shareholders_count with their own reference dates and
+        nav_shareholders_values_source.
 
         Parameters
         ----------------
@@ -80,8 +82,10 @@ class AlternativeDataFunds:
             Issuer key/name filter (e.g. 'blackrock', 'btg_pactual').
             Field is not required.
         source: str
-            Holdings source used to compute reference_date, positions_count and
-            total_value: 'official', 'approximate', or 'index'.
+            Holdings source used to compute holdings_reference_date,
+            positions_count and holdings_source: 'official', 'approximate', or
+            'index'. This does not change the CVM/FNET source used for daily
+            AUM, NAV and holder-count metrics.
             Field is not required. Default: 'official'.
         sort_by: str
             Sort mode: 'name', 'ticker', 'positions_count_desc',
