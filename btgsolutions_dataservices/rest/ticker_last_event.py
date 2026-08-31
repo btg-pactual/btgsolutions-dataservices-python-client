@@ -145,6 +145,33 @@ class TickerLastEvent:
             response = json.loads(response.text)
             raise BadResponse(f'Error: {response}')
 
+    def get_settlement_price(self, tickers: List[str], raw_data: bool = False):
+
+        """
+        This method provides the most recent settlement price records for a list of B3 derivatives tickers.
+
+        Parameters
+        ----------------
+        tickers: List[str]
+            List of ticker symbols.
+            Field is required. Example: ['WDOH25', 'WINM25'].
+        raw_data: bool
+            If false, returns data in a dataframe. If true, returns raw data.
+            Field is not required. Default: False.
+        """
+
+        url = f"{base_url}/api/v1/marketdata/br/b3/snapshot/settlement-price/batch?tickers={','.join(tickers)}"
+
+        response = requests.request("GET", url, headers={"authorization": f"Bearer {self.authenticator.token}"})
+        if response.status_code == 200:
+            if raw_data:
+                return response.json()
+            else:
+                return pd.DataFrame([r for records in response.json().values() for r in records])
+        else:
+            response = json.loads(response.text)
+            raise BadResponse(f'Error: {response.get("ApiClientError", response.get("error", ""))}')
+
     def get_available_tickers(self,type:str, data_type:str):
 
         """

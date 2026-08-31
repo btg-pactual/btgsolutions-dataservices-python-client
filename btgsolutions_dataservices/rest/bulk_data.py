@@ -13,11 +13,17 @@ BILLING_HEADER_NAMES = (
     "X-Dry-Run",
     "X-Billable",
     "X-Requested-Rows",
-    "X-Current-Rows",
-    "X-Contracted-Limit-Rows",
-    "X-Remaining-Rows",
-    "X-Already-Billed",
+    "X-Billing-Period",
+    "X-Charge-Type",
+    "X-Contract-Type",
+    "X-Price-Per-Million-Ticks-BRL",
+    "X-Billing-Amount-BRL",
+    "X-Current-Month-Billing-Amount-BRL",
+    "X-Monthly-Billing-Limit-BRL",
+    "X-Remaining-Monthly-Billing-Amount-BRL",
     "X-Would-Exceed-Limit",
+    "X-License-Active-Before-Access",
+    "X-Leased-Until",
 )
 
 

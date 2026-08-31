@@ -575,6 +575,20 @@ DATASERVICES_ENDPOINTS: dict[str, dict[str, Any]] = {
             "not a last trade or top-of-book snapshot."
         ),
     },
+    "TickerLastEvent.get_settlement_price": {
+        "category": "last_event",
+        "path": "/api/v1/marketdata/br/b3/snapshot/settlement-price/batch",
+        "method": "GET",
+        "client": "TickerLastEvent",
+        "description": (
+            "Return the most recent settlement price records for a list of B3 "
+            "derivatives tickers. Results are grouped by ticker and price type."
+        ),
+        "parameters": {
+            "tickers": "List of derivatives tickers such as ['WDOH25', 'WINM25'].",
+        },
+        "relationships": ["ticker_discovery", "reference_enrichment"],
+    },
     "ReferenceData.ticker_reference": {
         "category": "reference_data",
         "path": "/api/v1/marketdata/br/b3/snapshot/instruments/batch",
@@ -997,6 +1011,7 @@ DATASERVICES_TOOL_ENDPOINTS: dict[str, str] = {
     "get_last_top_of_book": "TickerLastEvent.get_tobs",
     "get_trading_status": "TickerLastEvent.get_status",
     "list_last_event_tickers": "TickerLastEvent.get_available_tickers",
+    "get_last_settlement_price": "TickerLastEvent.get_settlement_price",
     "get_ticker_reference": "ReferenceData.ticker_reference",
     "get_corporate_events": "CorporateEvents.get",
     "get_company_general_info": "CompanyData.general_info",

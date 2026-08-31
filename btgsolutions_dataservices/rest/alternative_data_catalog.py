@@ -410,16 +410,14 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
             "for ETF discovery because ETFs are not returned by listed-company "
             "search endpoints. Use include_metrics=False for lightweight "
             "autocomplete/search responses. Returned rows can combine fund "
-            "identity, issuer, index metadata, latest holdings snapshot fields "
-            "and daily NAV/AUM/holder metrics. Holdings fields use "
-            "holdings_reference_date and holdings_source; daily metrics use "
-            "total_value, quota_value and shareholders_count with their own "
-            "reference dates and nav_shareholders_values_source."
+            "identity, issuer, index metadata and latest NAV/AUM/holder metrics "
+            "from sources such as CVM/FNET, B3 index composition or manager/"
+            "issuer official holdings, depending on coverage."
         ),
         "parameters": {
             "query": "Free-text filter over ticker, fund name, CNPJ or issuer.",
             "issuer": "Optional issuer key/name filter.",
-            "source": "Holdings source used for holdings_reference_date, positions_count and holdings_source: official, approximate or index. Daily AUM/NAV/holder metrics keep their own CVM/FNET source.",
+            "source": "Holdings source used for reference date and totals: official, approximate or index.",
             "sort_by": "Sort mode: name, ticker, positions_count_desc, total_value_desc, total_value_asc, fund_nav_desc, fund_nav_asc, nav_desc, nav_asc, shareholders_count_desc, shareholders_count_asc, holders_desc or holders_asc.",
             "min_positions": "Minimum number of positions required.",
             "include_metrics": "When false, skip latest holdings/AUM/NAV/holder metric enrichment.",
@@ -534,9 +532,8 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
             "Get Brazilian macroeconomic or public fiscal time-series observations. "
             "Indicator values include selic, ipca, ipca_contributions, "
             "ipca_categories, copom, pim, pmc, pms, pnad, gdp, comexstat and "
-            "rreo. COPOM returns official BCB minutes/atas by default and can "
-            "also return post-meeting statements/comunicados with type. Returned "
-            "units, date grains and row fields vary by indicator and source."
+            "rreo. Returned units, date grains and row fields vary by indicator "
+            "and source."
         ),
         "parameters": {
             "indicator": "Macro indicator code.",
@@ -548,13 +545,7 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
             "state": "Brazilian state UF filter for Comexstat or RREO.",
             "country": "Partner country filter for Comexstat.",
             "source": "Optional data-source filter.",
-            "type": (
-                "Subseries/type filter. For SELIC use monthly_accumulated "
-                "(default), accumulated_12m, annualized_daily, or target_rate. "
-                "For COPOM use ata/minute aliases for minutes or "
-                "comunicado/statement aliases for post-meeting statements. "
-                "For PIM, PMC, PMS and GDP use yoy or mom."
-            ),
+            "type": "Subseries/type filter for PIM, PMC, PMS or GDP, such as industria_geral.",
             "aggregate": (
                 "Optional compact aggregation mode. RREO supports timeline and states; "
                 "Comexstat supports states, countries, timeline and top_partners_by_state."
@@ -939,7 +930,6 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
             "summary": "When true, include direct-account summary metrics.",
             "metrics": "Optional comma-separated summary metrics. ebitda is ignored because it is not a direct CVM account-line metric.",
             "include_raw": "When false, suppress raw line items and return only metadata plus summary.",
-            "include_total": "When false, skip the total count query and omit total from the response.",
             "limit": "Maximum number of line items.",
             "offset": "Pagination offset.",
         },
@@ -1004,7 +994,6 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
             "participant_group": "Optional participant group filter.",
             "group_by": "Optional comma-separated aggregation dimensions: month, participant_group, side, asset, company, transaction_type, security, characteristics.",
             "include_raw": "When false, suppress raw disclosure documents and return only metadata plus aggregations.",
-            "include_total": "When false, skip the total count query and omit total from the response.",
             "operation_type": "Optional operation class; spot narrows insiders to cash buy/sell operations.",
             "limit": "Maximum number of documents.",
             "offset": "Pagination offset.",
@@ -1322,7 +1311,6 @@ PUBLIC_SOURCES_ENDPOINTS: dict[str, dict[str, Any]] = {
         "parameters": {
             "url": "CVM RAD PDF URL returned by assemblies or official notices.",
             "lang": "Summary language: pt, en or es.",
-            "title": "Optional document title to persist with the summary.",
         },
         "relationships": ["document_summary", "document_market_event_bridge"],
     },

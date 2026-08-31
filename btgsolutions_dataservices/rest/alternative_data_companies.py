@@ -636,7 +636,6 @@ class AlternativeDataCompanies:
         summary: Optional[bool] = None,
         metrics: Optional[Union[str, Sequence[str]]] = None,
         include_raw: Optional[bool] = None,
-        include_total: Optional[bool] = None,
         limit: int = 100,
         offset: int = 0,
     ) -> dict:
@@ -697,11 +696,6 @@ class AlternativeDataCompanies:
             When false and ``summary=True``, suppress raw line items and return
             only metadata plus the summary block.
             Field is not required. Default: True.
-        include_total: bool
-            When false, skip the total count query and omit ``total`` from the
-            response. Useful for chart/dashboard calls that only need returned
-            rows or summary.
-            Field is not required. Default: True.
         limit: int
             Maximum number of results to return.
             Field is not required. Default: 100.
@@ -721,7 +715,6 @@ class AlternativeDataCompanies:
             "summary": summary,
             "metrics": self._csv_param(metrics),
             "include_raw": include_raw,
-            "include_total": include_total,
             "limit": limit,
             "offset": offset,
         })
@@ -803,7 +796,6 @@ class AlternativeDataCompanies:
         participant_group: Optional[str] = None,
         group_by: Optional[Union[str, Sequence[str]]] = None,
         include_raw: Optional[bool] = None,
-        include_total: Optional[bool] = None,
         operation_type: Optional[str] = None,
         limit: int = 100,
         offset: int = 0,
@@ -862,10 +854,6 @@ class AlternativeDataCompanies:
             When false, suppress raw disclosure documents and return only
             metadata plus aggregations.
             Field is not required. Default: True.
-        include_total: bool
-            When false, skip the total count query and omit ``total`` from the
-            response. Useful for aggregation-only dashboard calls.
-            Field is not required. Default: True.
         operation_type: str
             Optional operation class. ``spot`` narrows insider aggregations to
             cash buy/sell operations and excludes transfers/conversions.
@@ -891,7 +879,6 @@ class AlternativeDataCompanies:
             "participant_group": participant_group,
             "group_by": self._csv_param(group_by),
             "include_raw": include_raw,
-            "include_total": include_total,
             "operation_type": operation_type,
             "limit": limit,
             "offset": offset,
