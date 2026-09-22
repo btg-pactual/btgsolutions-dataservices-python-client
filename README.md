@@ -326,6 +326,8 @@ bulk_data.get_data(ticker='DI1F18', date='2017-01-02', data_type='trades')
 # bulk_data.get_data(ticker='PETR4', date='2024-01-22', data_type='books')
 # bulk_data.get_data(ticker='VALE3', date='2024-04-01', data_type='trades-and-book-events')
 # bulk_data.get_data(ticker='PETR4', date='2025-05-07', data_type='instrument-status')
+# bulk_data.get_data(ticker='PETR4', date='2025-05-07', data_type='execution-summary')
+# bulk_data.get_data(ticker='PETR4', date='2025-05-07', data_type='execution-statistics')
 ```
 
 ##### Get Data With Billing Headers
@@ -361,6 +363,27 @@ bulk_data = btg.BulkData(api_key='YOUR_API_KEY')
 bulk_data.get_compressed_data(channel='98', date='2026-01-30', data_type='instruments')
 # bulk_data.get_compressed_data(channel='98', date='2026-01-30', data_type='incremental', feed='feedA')
 # bulk_data.get_compressed_data(channel='98', date='2026-01-30', data_type='snapshot')
+```
+
+#### Market Events
+
+##### Available Tickers
+
+```python
+import btgsolutions_dataservices as btg
+market_events = btg.MarketEvents(api_key='YOUR_API_KEY')
+market_events.get_available_tickers(date='2025-05-07', data_type='price-events', prefix='PETR')
+```
+
+##### Get Data
+
+```python
+import btgsolutions_dataservices as btg
+market_events = btg.MarketEvents(api_key='YOUR_API_KEY')
+market_events.get_data(ticker='PETR4', date='2025-05-07', data_type='price-events')
+# market_events.get_data(ticker='AURE3T', date='2025-05-07', data_type='open-interest')
+# market_events.get_data(ticker='PETR4', date='2025-05-07', data_type='auction-imbalance')
+# market_events.get_data(ticker='PETR4', date='2025-05-07', data_type='price-quantity-bands')
 ```
 
 ### Alternative Data

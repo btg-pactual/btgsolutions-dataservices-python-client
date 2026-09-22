@@ -858,13 +858,17 @@ DATASERVICES_ENDPOINTS: dict[str, dict[str, Any]] = {
         "client": "BulkData",
         "description": (
             "Return tick-by-tick bulk market data for one ticker and date as a "
-            "Parquet-backed dataset. Data types include trades, books and "
-            "trades-and-book-events."
+            "Parquet-backed dataset. Data types include trades, books, "
+            "trades-and-book-events, instrument-status, execution-summary "
+            "and execution-statistics."
         ),
         "parameters": {
             "ticker": "Ticker such as DI1F18 or PETR4.",
             "date": "Coverage date in YYYY-MM-DD.",
-            "data_type": "Bulk data type such as trades, books or trades-and-book-events.",
+            "data_type": (
+                "Bulk data type: trades, books, trades-and-book-events, "
+                "instrument-status, execution-summary or execution-statistics."
+            ),
         },
         "relationships": [
             "bulk_data_discovery", "book_scope_microstructure",

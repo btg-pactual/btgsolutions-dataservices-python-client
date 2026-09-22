@@ -112,7 +112,8 @@ class BulkData:
         data_type: str
             Market data type.
             Field is required.
-            Example: 'trades', 'books' or 'trades-and-book-events'.
+            Example: 'trades', 'books', 'trades-and-book-events', 'execution-summary'
+            or 'execution-statistics'.
         prefix: str
             Filters tickers starting with the prefix.
             Field is optional.
@@ -207,7 +208,8 @@ class BulkData:
             Format: 'YYYY-MM-DD'. Example: '2023-07-03', '2023-07-28'.
         data_type: str
             Market data type.
-            Field is required. Available types: 'trades', 'books', 'trades-and-book-events'
+            Field is required. Available types: 'trades', 'books', 'trades-and-book-events',
+            'instrument-status', 'execution-summary', 'execution-statistics'
         raw_data: bool
             If false, returns data in a dataframe. If true, returns raw data.
             Field is not required. Default: False.

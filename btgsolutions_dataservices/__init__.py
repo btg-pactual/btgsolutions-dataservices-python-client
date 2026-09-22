@@ -1,4 +1,4 @@
-__version__ = "4.8.0"
+__version__ = "4.8.2"
 
 from .websocket import *
 from .rest import *
