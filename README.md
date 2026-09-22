@@ -372,7 +372,7 @@ bulk_data.get_compressed_data(channel='98', date='2026-01-30', data_type='instru
 ```python
 import btgsolutions_dataservices as btg
 market_events = btg.MarketEvents(api_key='YOUR_API_KEY')
-market_events.get_available_tickers(date='2025-05-07', data_type='price-events', prefix='PETR')
+market_events.get_available_tickers(date='2026-09-17', data_type='price-events', prefix='PETR')
 ```
 
 ##### Get Data
@@ -380,10 +380,10 @@ market_events.get_available_tickers(date='2025-05-07', data_type='price-events',
 ```python
 import btgsolutions_dataservices as btg
 market_events = btg.MarketEvents(api_key='YOUR_API_KEY')
-market_events.get_data(ticker='PETR4', date='2025-05-07', data_type='price-events')
-# market_events.get_data(ticker='AURE3T', date='2025-05-07', data_type='open-interest')
-# market_events.get_data(ticker='PETR4', date='2025-05-07', data_type='auction-imbalance')
-# market_events.get_data(ticker='PETR4', date='2025-05-07', data_type='price-quantity-bands')
+market_events.get_data(ticker='PETR4', date='2026-09-17', data_type='price-events')
+# market_events.get_data(ticker='AURE3T', date='2026-09-17', data_type='open-interest')
+# market_events.get_data(ticker='PETR4', date='2026-09-17', data_type='auction-imbalance')
+# market_events.get_data(ticker='PETR4', date='2026-09-17', data_type='price-quantity-bands')
 ```
 
 ### Alternative Data
