@@ -153,7 +153,7 @@ class HFNWebSocketClient:
             on_close(close_status_code, close_msg)
             if reconnect:
                 if self.__nro_reconnect_retries == MAX_WS_RECONNECT_RETRIES:
-                    print("### Fail retriyng reconnect")
+                    print("### Fail retrying reconnect")
                     return
                 self.__nro_reconnect_retries += 1
                 print(

@@ -213,7 +213,7 @@ class MarketDataWebSocketClient:
 
             if reconnect:
                 if self.__nro_reconnect_retries == MAX_WS_RECONNECT_RETRIES:
-                    print(f"### Fail retriyng reconnect")
+                    print(f"### Fail retrying reconnect")
                     return
                 self.__nro_reconnect_retries += 1
                 print(
