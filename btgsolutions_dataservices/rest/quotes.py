@@ -66,7 +66,7 @@ class Quotes:
             Market type.
             Field is required. Example: 'stocks', 'options', 'derivatives', 'indices'.
         mode: str
-            Realtime or 15-minutes delayed.
+            Realtime or 15-minute delayed.
             Field is required. Example: 'realtime' or 'delayed'.
             Default: 'realtime'.
         raw_data: bool
@@ -113,7 +113,7 @@ class Quotes:
             Market type.
             Field is required. Example: 'stocks', 'options', 'derivatives', 'indices'.
         mode: str
-            Realtime or 15-minutes delayed.
+            Realtime or 15-minute delayed.
             Field is not required. Example: 'realtime' or 'delayed'.
             Default: 'realtime'.
         ticker_type: str
@@ -174,7 +174,7 @@ class Quotes:
             Market type.
             Field is required. Example: 'stocks', 'options', 'derivatives', 'indices'.
         mode: str
-            Realtime or 15-minutes delayed.
+            Realtime or 15-minute delayed.
             Field is not required. Example: 'realtime' or 'delayed'.
             Default: 'realtime'.
         """
