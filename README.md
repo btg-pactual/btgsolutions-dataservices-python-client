@@ -832,6 +832,35 @@ single_file_result = book_scope.get(
 )
 ```
 
+##### Book Scope, NUAM Colombia / NUAM Chile / BIVA (Mexico) / BMV (Mexico)
+
+These exchanges expose a single combined `book` dataset instead of B3's
+`book_snapshot`/`book_incremental` split (every row already carries the full
+bid/ask state), and take no `market_type` parameter.
+
+```python
+import btgsolutions_dataservices as btg
+book_scope = btg.BookScope(api_key='YOUR_API_KEY')
+
+# NUAM Colombia
+book_scope.get(
+    symbol='PFDAVIGRP',
+    market='nuam_colombia',
+    start_time='2026-05-28T14:12:00Z',
+    end_time='2026-05-28T14:15:00Z',
+    select=['trades', 'book'],  # choose one or both; default is both
+)
+
+# NUAM Chile
+book_scope.get(symbol='<TICKER>', market='nuam_chile', start_time='2026-05-28T14:12:00Z', end_time='2026-05-28T14:15:00Z')
+
+# BIVA (Mexico)
+book_scope.get(symbol='<TICKER>', market='biva_mexico', start_time='2026-05-28T14:12:00Z', end_time='2026-05-28T14:15:00Z')
+
+# BMV (Mexico)
+book_scope.get(symbol='<TICKER>', market='bmv_mexico', start_time='2026-05-28T14:12:00Z', end_time='2026-05-28T14:15:00Z')
+```
+
 #### Broker Analytics
 
 ```python

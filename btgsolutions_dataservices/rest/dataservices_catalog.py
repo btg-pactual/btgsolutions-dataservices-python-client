@@ -74,9 +74,10 @@ DATASERVICES_ENDPOINT_RELATIONSHIPS: dict[str, str] = {
         "requesting ticker/date bulk data or compressed market-data files."
     ),
     "book_scope_microstructure": (
-        "get_book_scope combines trades, book snapshots and incremental book "
-        "events for one symbol and a short time window. Use it for microstructure "
-        "questions after a ticker, market_type and event window are known."
+        "get_book_scope combines trades and book state for one symbol and a "
+        "short time window, on B3, NUAM Colombia, NUAM Chile, BIVA (Mexico) or "
+        "BMV (Mexico). Use it for microstructure questions after a ticker, "
+        "market/market_type and event window are known."
     ),
     "company_identifier_bridge": (
         "Use search_companies or resolve_company_identifier to translate company "
@@ -205,9 +206,11 @@ DATASERVICES_RESULT_CONTRACTS: dict[str, str] = {
         "position or inventory database."
     ),
     "book_scope": (
-        "MCP result is a dataset handle with selected book-scope datasets such "
-        "as trades, book_snapshot and book_incremental. Timestamps are UTC ISO "
-        "datetimes and the request window is capped at 10 minutes."
+        "MCP result is a dataset handle with selected book-scope datasets: "
+        "trades, book_snapshot and book_incremental for B3, or trades and book "
+        "for NUAM Colombia, NUAM Chile, BIVA (Mexico) and BMV (Mexico). "
+        "Timestamps are UTC ISO datetimes and the request window is capped at "
+        "10 minutes."
     ),
 }
 
@@ -970,21 +973,37 @@ DATASERVICES_ENDPOINTS: dict[str, dict[str, Any]] = {
     },
     "BookScope.get": {
         "category": "book_scope",
-        "path": "/v1/marketdata/br/b3/book-scope/{scope}/{market_type}/{dataset}",
+        "path": "/v1/marketdata/{exchange_path}/book-scope/{scope}/{dataset}",
         "method": "GET",
         "client": "BookScope",
         "description": (
-            "Return trades, book snapshots and/or incremental book events for "
-            "one B3 symbol over a short ISO datetime window. The Python client "
-            "chooses intraday or historical scope from end_time and paginates "
-            "by rpt_seq."
+            "Return trades and book state (plus, for B3 only, a separate "
+            "incremental book feed) for one symbol over a short ISO datetime "
+            "window, on B3 (Brazil), NUAM Colombia, NUAM Chile, BIVA (Mexico) or "
+            "BMV (Mexico). The Python client chooses intraday or historical scope "
+            "from end_time and the server paginates internally."
         ),
         "parameters": {
-            "symbol": "Ticker or symbol such as PETR4 or DOLM26.",
-            "market_type": "Market segment: stocks, derivatives or options.",
+            "symbol": (
+                "Ticker or symbol such as PETR4 or DOLM26 (B3) or PFDAVIGRP "
+                "(NUAM Colombia)."
+            ),
+            "market": (
+                "Exchange to query: b3 (default), nuam_colombia, nuam_chile, "
+                "biva_mexico or bmv_mexico."
+            ),
+            "market_type": (
+                "Market segment: stocks, derivatives or options. Required only "
+                "when market=b3; unused for every other market."
+            ),
             "start_time": "UTC ISO datetime such as 2026-05-28T14:12:00Z.",
             "end_time": "UTC ISO datetime such as 2026-05-28T14:15:00Z.",
-            "select": "Datasets to return: trades, book_snapshot and/or book_incremental.",
+            "select": (
+                "Datasets to return. For market=b3: trades, book_snapshot "
+                "and/or book_incremental. For every other market: trades "
+                "and/or book (a single dataset already carrying full bid/ask "
+                "state, since those exchanges have no separate snapshot step)."
+            ),
             "aggregate_info": "If true, combine selected datasets into one table.",
         },
         "relationships": [
