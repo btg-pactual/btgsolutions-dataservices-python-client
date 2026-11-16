@@ -31,6 +31,7 @@ PROCESSEDTRADES = 'processed-trades'
 INSTRUMENTSTATUS = 'instrument_status'
 SETTLEMENTPRICES = 'settlement-price'
 BOOKS = 'books'
+BOOK_EVENTS = 'book-events'
 INDICES = 'indices'
 
 ALL = 'all'
@@ -47,9 +48,13 @@ VALID_MARKET_DATA_TYPES = [
     BOOKS,
     INDICES,
     INSTRUMENTSTATUS,
-    SETTLEMENTPRICES
+    SETTLEMENTPRICES,
+    BOOK_EVENTS,
 ]
 VALID_MARKET_DATA_SUBTYPES = [ALL, STOCKS, OPTIONS, DERIVATIVES]
+
+# order-by-order book WebSocket: tickers per connection
+BOOK_EVENTS_MAX_TICKERS = 10
 
 FEED_A = "A"
 FEED_B = "B"
@@ -94,6 +99,13 @@ market_data_socket_urls = {
             },
             DELAYED: {
                 ALL: f"{url_ws}v2/marketdata/{INDICES}/{DELAYED}",
+            }
+        },
+        BOOK_EVENTS: {
+            REALTIME: {
+                STOCKS: f"{base_url_ws}{ws_br_b3_base_path}book-events/{STOCKS}",
+                OPTIONS: f"{base_url_ws}{ws_br_b3_base_path}book-events/{OPTIONS}",
+                DERIVATIVES: f"{base_url_ws}{ws_br_b3_base_path}book-events/{DERIVATIVES}",
             }
         },
         INSTRUMENTSTATUS: {

@@ -2,12 +2,15 @@
 from typing import Optional, List
 from ..exceptions import WSTypeError, DelayedError, FeedError
 from ..rest import Authenticator
-from ..config import market_data_socket_urls, market_data_feedb_socket_urls, MAX_WS_RECONNECT_RETRIES, VALID_STREAM_TYPES, VALID_EXCHANGES, VALID_MARKET_DATA_TYPES, VALID_MARKET_DATA_SUBTYPES, REALTIME, B3, TRADES, INDICES, ALL, STOCKS, BOOKS, FEED_A, FEED_B, SETTLEMENTPRICES
+from ..config import market_data_socket_urls, market_data_feedb_socket_urls, MAX_WS_RECONNECT_RETRIES, VALID_STREAM_TYPES, VALID_EXCHANGES, VALID_MARKET_DATA_TYPES, VALID_MARKET_DATA_SUBTYPES, REALTIME, B3, TRADES, INDICES, ALL, STOCKS, BOOKS, BOOK_EVENTS, BOOK_EVENTS_MAX_TICKERS, FEED_A, FEED_B, SETTLEMENTPRICES
 from .websocket_default_functions import _on_open, _on_message, _on_error, _on_close
 import websocket
 import json
 import ssl
 import threading
+
+# book-events: how long run() waits for the connection to open before giving up
+DEFAULT_CONNECT_TIMEOUT = 10.0
 
 
 class MarketDataWebSocketClient:
@@ -49,7 +52,11 @@ class MarketDataWebSocketClient:
 
     data_type: str
         Market Data type.
-        Options: 'trades', 'processed-trades', 'books', 'indices', 'securities', 'stoploss', 'candles-1S', 'candles-1M', 'instrument_status', 'settlement-price'.
+        Options: 'trades', 'processed-trades', 'books', 'book-events', 'indices', 'securities', 'stoploss', 'candles-1S', 'candles-1M', 'instrument_status', 'settlement-price'.
+        'book-events' is the B3 order-by-order book (market-by-order): a ``book_snapshot`` of each
+        subscribed ticker, then one ``book_event`` per order change, with the broker of each order
+        (realtime only, at most 10 tickers per connection). To keep the book in memory, see
+        :class:`btgsolutions_dataservices.RealtimeBookEvents`.
         Field is not required. Default: 'trades'.
 
     data_subtype: str
@@ -64,6 +71,7 @@ class MarketDataWebSocketClient:
     ssl: bool
         Enable or disable ssl configuration.
         Field is not required. Default: True (enable).
+        'book-events' always verifies the server certificate ('ssl=False' is refused).
 
     feed: str
         Market Data Feed.
@@ -114,6 +122,13 @@ class MarketDataWebSocketClient:
             raise FeedError(
                 f"Must provide a valid 'data_subtype' parameter. Valid options are: {VALID_MARKET_DATA_SUBTYPES}")
 
+        if data_type == BOOK_EVENTS:
+            if not ssl:
+                # the connection carries the access token: the server certificate is always verified
+                raise ValueError("'book-events' always verifies the server's TLS certificate: 'ssl=False' is not supported")
+            if instruments and len(instruments) > BOOK_EVENTS_MAX_TICKERS:
+                raise ValueError(f"'book-events' accepts at most {BOOK_EVENTS_MAX_TICKERS} tickers per connection")
+
         if feed == FEED_B:
             url_feed_map = market_data_feedb_socket_urls
         else:
@@ -136,6 +151,7 @@ class MarketDataWebSocketClient:
         reconnect=True,
         spawn_thread:bool=True,
         default_logs:bool=True,
+        connect_timeout: float = DEFAULT_CONNECT_TIMEOUT,
     ):
         """
         Initializes a connection to websocket and subscribes to the instruments, if it was passed in the class initialization.
@@ -180,7 +196,18 @@ class MarketDataWebSocketClient:
             Default non-required logs, detailing messages sent from the client to the WebSocket server.
             Field is not required.
             Default: True.
+        connect_timeout: float
+            Only for 'book-events': seconds to wait for the connection to open (default 10).
+
+        For 'book-events', run() handles messages in a single thread (book changes must be
+        applied in the order they arrive), never reconnects by itself (a dropped connection
+        calls on_close once; RealtimeBookEvents reconnects at its level) and never waits
+        longer than connect_timeout for the connection to open: if it doesn't, on_close is
+        called with a timeout message.
         """
+        if self.data_type == BOOK_EVENTS:
+            return self._run_book_events(on_open, on_message, on_error, on_close, connect_timeout, default_logs)
+
         if on_open is None:
             on_open = _on_open
         if on_message is None:
@@ -265,7 +292,75 @@ class MarketDataWebSocketClient:
         """
         Closes connection with websocket.
         """
+        if self.data_type == BOOK_EVENTS:
+            self._closed = True
+            if getattr(self, "ws", None) is not None:
+                self.ws.on_close = None
+                self.ws.close()
+            return
         self.ws.close()
+
+    def request_snapshot(self, ticker: str) -> None:
+        """
+        'book-events' only: ask for a ticker's current book (a ``book_snapshot`` inside the
+        ``get_last_event`` reply), e.g. to recover after a gap in ``seq``.
+        """
+        self.__send({'action': 'get_last_event', 'params': [ticker]})
+
+    def _run_book_events(self, on_open, on_message, on_error, on_close, connect_timeout, default_logs):
+        if getattr(self, "_closed", False):
+            return None  # closed by close(): no reconnection
+
+        self.default_logs = default_logs is True
+        on_open = on_open or (lambda: None)
+        on_message = on_message or (lambda data: None)
+        on_error = on_error or (lambda error: None)
+        on_close = on_close or (lambda code, message: None)
+
+        # set by whichever of on_open/on_close happens first: the wait below is bounded
+        resolved = threading.Event()
+
+        def _on_open(ws):
+            resolved.set()
+            on_open()
+            if self.instruments:
+                self.subscribe(self.instruments)
+
+        def _on_message(ws, data):
+            on_message(data)  # single thread: book changes are applied in order
+
+        def _on_error(ws, error):
+            on_error(error)
+
+        def _on_close(ws, code, message):
+            resolved.set()
+            on_close(code, message)
+
+        self.ws = websocket.WebSocketApp(
+            url=self.url,
+            on_open=_on_open,
+            on_message=_on_message,
+            on_error=_on_error,
+            on_close=_on_close,
+            header={
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.54 Safari/537.36",
+                "Sec-WebSocket-Protocol": self.__authenticator.token,
+            },
+        )
+        ssl_conf = {"sslopt": {"cert_reqs": ssl.CERT_REQUIRED}}  # always verify the server certificate
+        thread = threading.Thread(target=self.ws.run_forever, kwargs=ssl_conf)
+        thread.daemon = True
+        thread.start()
+
+        if not resolved.wait(timeout=connect_timeout):
+            # neither opened nor closed in time: give up on this attempt
+            ws, self.ws.on_close, self.ws.on_open = self.ws, None, None
+            try:
+                ws.close()
+            except Exception:
+                pass
+            on_close(None, f"Timed out waiting {connect_timeout}s for the connection to open.")
+        return None
 
     def subscribe(self, list_instruments, n=None, initial_snapshot: bool=False):
         """
@@ -365,6 +460,9 @@ class MarketDataWebSocketClient:
         ticker: str
             Field is required.
         """
+        if self.data_type == BOOK_EVENTS:
+            # 'book-events' takes the ticker in a list; the reply carries its current book
+            return self.request_snapshot(ticker)
         self.__send({'action': 'get_last_event', 'params': ticker})
 
     def candle_subscribe(self, list_instruments: list, candle_type: str):

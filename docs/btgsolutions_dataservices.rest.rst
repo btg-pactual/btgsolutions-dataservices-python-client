@@ -188,6 +188,14 @@ btgsolutions\_dataservices.rest.ticker\_last\_event module
    :undoc-members:
    :show-inheritance:
 
+btgsolutions\_dataservices.rest.trades\_and\_book\_events module
+----------------------------------------------------------------
+
+.. automodule:: btgsolutions_dataservices.rest.trades_and_book_events
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 btgsolutions\_dataservices.rest.ticker\_last\_event\_polling module
 -------------------------------------------------------------------
 

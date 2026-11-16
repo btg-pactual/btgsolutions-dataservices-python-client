@@ -36,6 +36,14 @@ btgsolutions\_dataservices.websocket.market\_data\_websocket\_client module
    :show-inheritance:
    :undoc-members:
 
+btgsolutions\_dataservices.websocket.realtime\_book\_events module
+------------------------------------------------------------------
+
+.. automodule:: btgsolutions_dataservices.websocket.realtime_book_events
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 btgsolutions\_dataservices.websocket.websocket\_default\_functions module
 -------------------------------------------------------------------------
 

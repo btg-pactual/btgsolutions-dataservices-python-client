@@ -180,6 +180,66 @@ ws.unsubscribe_top_brokers(tickers=['SNFF11'])
 #   sleep(1)
 ```
 
+##### Book Events (order-by-order book)
+
+The B3 order-by-order book (market-by-order) with the broker of each order: a `book_snapshot` of each subscribed ticker (every resting order, in priority order), then one `book_event` per order change. Realtime only, at most 10 tickers per connection, for `stocks`, `options` and `derivatives`.
+
+```python
+import btgsolutions_dataservices as btg
+
+ws = btg.MarketDataWebSocketClient(
+    api_key='YOUR_API_KEY',
+    data_type='book-events',
+    data_subtype='derivatives',
+    instruments=['WINZ26'],
+)
+ws.run(on_message=lambda message: print(message))  # book_snapshot, then book_event / book_status
+
+ws.get_last_event('WINZ26')  # current book of a subscribed ticker (a book_snapshot)
+
+## The following is optional to keep the program running in a .py file:
+# from time import sleep
+# while True:
+#   sleep(1)
+```
+
+For `book-events`, messages are handled in a single thread (book changes must be applied in order), the server certificate is always verified, `run()` waits at most `connect_timeout` seconds (default 10) for the connection to open and a dropped connection only calls `on_close` (no automatic reconnection at this level).
+
+##### Realtime Book by Order
+
+`RealtimeBookEvents` keeps each ticker's book in memory (`BookByOrder`) from the `book-events` stream and yields one entry per change, in the same shape as the historical `TradesAndBookEvents.get_book()` (book only, no trades).
+
+```python
+import btgsolutions_dataservices as btg
+
+books = btg.RealtimeBookEvents(api_key='YOUR_API_KEY', data_subtype='derivatives')
+
+for kind, info in books.get_book(['WINZ26', 'WDOZ26'], view='mbo', n_levels=5):
+    if kind == 'book':
+        print(info['symbol'], info['bid'][:1], info['offer'][:1], info['order']['event_type'], info['order']['action'])
+    else:
+        print('status:', info)  # suspect / ok / waiting_snapshot / resyncing / disconnected / reconnected / reconnect_failed
+
+    # books.book('WINZ26') is the whole BookByOrder, always up to date
+```
+
+- `view='mbo'` (default): top `n_levels` orders per side as `(order_id, price, size, broker)`; `view='mbp'`: top price levels as `(price, total_size)`.
+- `info['order']`: the order that changed (`order_id`, `side`, `price`, `size`, `broker`, `event_type`, `action`, `seq_num`, `rpt_seq`, `timestamp` = order entry time) plus `transact_time` (exchange time of the change), `end_of_event` (last change of an exchange event; always `True` on a snapshot) and `prev_size` (on a `CHANGE`).
+- `info['queued']`: messages already waiting behind this one. Near 0, the loop keeps up; if it keeps growing, the code inside the loop is slower than the feed. The book in memory is always current, so skipping work on an entry never skips the event in the book:
+
+```python
+if not info['order']['end_of_event']:
+    continue                 # mid exchange event: an intermediate book
+if info['queued'] > 0:
+    continue                 # something newer is already queued
+heavy_work(books.book('WINZ26'))
+```
+
+- A gap in a ticker's `seq_num` yields `('status', {'status': 'resyncing', 'reason': 'seq_gap'})`, asks the server for the current book and skips that ticker's events until it comes.
+- Connection drops yield `disconnected` (with the server's close code and reason when it sends one), then `reconnected` (every book comes again as a snapshot) or, after `max_reconnects` consecutive failures, `reconnect_failed` and the generator ends. `reconnect=False` ends the generator right after `disconnected`.
+- `timeout=` stops after that many seconds without messages; `break` or `books.close()` (also from another thread) closes the connection.
+- Orders without price (market orders in auctions) come with `price=None`, ahead of every price level. During auctions the book can be crossed (best bid >= best offer), as on the exchange.
+
 #### Intraday Candles
 
 ```python
@@ -363,6 +423,32 @@ bulk_data = btg.BulkData(api_key='YOUR_API_KEY')
 bulk_data.get_compressed_data(channel='98', date='2026-01-30', data_type='instruments')
 # bulk_data.get_compressed_data(channel='98', date='2026-01-30', data_type='incremental', feed='feedA')
 # bulk_data.get_compressed_data(channel='98', date='2026-01-30', data_type='snapshot')
+```
+
+#### Historical Book by Order
+
+Rebuild the order-by-order book of a past day from the trades-and-book-events stream, as a generator of `(kind, info)` pairs: `"book"` for each book change (with the `bid`/`offer` after it and the `order` that changed) and `"trade"` for trades. The day is streamed in bounded chunks (`batch_size`), so memory stays low.
+
+```python
+import btgsolutions_dataservices as btg
+
+events = btg.TradesAndBookEvents(api_key='YOUR_API_KEY')
+
+for kind, info in events.get_book(ticker='PETR4', date='2026-05-15', view='mbo', n_levels=5):
+    if kind == 'trade':
+        print('trade:', info)
+    else:
+        print('book:', info['bid'][:1], info['offer'][:1], info['order']['action'])
+
+# only a time window (the book is still replayed from the start of the day):
+for kind, info in events.get_book(
+    ticker='PETR4', date='2026-05-15',
+    boundary=[
+        {'field': 'timestamp', 'value': '2026-05-15 14:00:00', 'mode': 'after'},
+        {'field': 'timestamp', 'value': '2026-05-15 14:30:00', 'mode': 'until'},
+    ],
+):
+    ...
 ```
 
 #### Market Events
