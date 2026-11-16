@@ -1,3 +1,12 @@
+4.9.0 (2026-11-16)
+==================
+
+Added
+
+
+- Added the B3 order-by-order book: ``data_type='book-events'`` in ``MarketDataWebSocketClient`` (realtime, up to 10 tickers per connection, server certificate always verified), ``RealtimeBookEvents`` to keep the books in memory from it (reconnection with ``reconnect``/``max_reconnects``, ``queued`` per entry, status entries), ``TradesAndBookEvents.get_book`` to rebuild a past day, and the ``BookByOrder`` engine both use. New dependency: ``sortedcontainers``. (book-events)
+
+
 4.7.1 (2026-07-20)
 ==================
 
