@@ -13,6 +13,14 @@ Subpackages
 Submodules
 ----------
 
+btgsolutions\_dataservices.book\_by\_order module
+-------------------------------------------------
+
+.. automodule:: btgsolutions_dataservices.book_by_order
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 btgsolutions\_dataservices.config module
 ----------------------------------------
 
