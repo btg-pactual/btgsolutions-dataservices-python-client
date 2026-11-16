@@ -134,7 +134,7 @@ class BrokerAnalyticsWebSocketClient:
 
             if reconnect:
                 if self.__nro_reconnect_retries == MAX_WS_RECONNECT_RETRIES:
-                    print("### Fail retriyng reconnect")
+                    print("### Fail retrying reconnect")
                     return
                 self.__nro_reconnect_retries += 1
                 print(f"### Reconnecting.... Attempts: {self.__nro_reconnect_retries}/{MAX_WS_RECONNECT_RETRIES}")
