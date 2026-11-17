@@ -1,3 +1,12 @@
+4.9.1 (2026-11-17)
+==================
+
+Added
+
+
+- Added BookScope support for NUAM Colombia, NUAM Chile, BIVA and BMV (Mexico): ``BookScope.get`` now accepts a ``market`` parameter (``b3``, ``nuam_colombia``, ``nuam_chile``, ``biva_mexico``, ``bmv_mexico``), defaulting to ``b3`` for backward compatibility. The NUAM-shaped exchanges expose a single combined ``book`` dataset instead of B3's ``book_snapshot``/``book_incremental`` split and take no ``market_type`` parameter. (#1)
+
+
 4.9.0 (2026-11-16)
 ==================
 
